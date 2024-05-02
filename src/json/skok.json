@@ -1,0 +1,211 @@
+{
+  "undervisningsrom": {
+    "luftmengder": {
+      "m3_per_person": 26.0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48db",
+      "rw_korridor": "34db"
+    },
+    "kommentar": ""
+  },
+
+  "grupperom": {
+    "luftmengder": {
+      "m3_per_person": 26.0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48db",
+      "rw_korridor": "34db"
+    },
+    "kommentar": ""
+  },
+
+  "vestibyle": {
+    "luftmengder": {
+      "m3_per_person": 26.0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "",
+      "rw_korridor": ""
+    },
+    "kommentar": ""
+  },
+
+  "korridor": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "",
+      "rw_korridor": ""
+    },
+    "kommentar": ""
+  },
+
+  "bibliotek": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+
+    "samlingsrom": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Lydkravene skal bearbeides avhengig av valgt løsning og planalgt bruk av disse rommene",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  }
+}

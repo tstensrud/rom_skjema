@@ -1,41 +1,60 @@
+import json
+import os
 class Room():
-    def __init__(self, area: float, room_population: int, air_per_person: float,
-                 air_emissions: float, air_process: float, air_minimum: float, regular_ventilasjon: bool,
-                 displacement_ventilation: bool, heat_exchange: str, vav: bool, cav: bool, temp: bool, co2: bool,
-                 movement: bool, moisture: bool, time: bool, notes: str, activity: str,  db_teknisk: int,
-                 db_rw_naborom: int, db_rw_korridor: int, additional: str):
-
+    def __init__(self, room_type: str, floor: str, room_number: str, room_name: str,
+                 population: int, area: float, system: str):
+        json_file_path = os.path.join(os.path.dirname(__file__), "json", "skok.json")
+        with open(json_file_path) as jfile:
+            data = json.load(jfile)
+        self.floor = floor
+        self.room_number = room_number
+        self.room_name = room_name
         self.area: float = area
-        self.room_population: int = room_population
-        self.air_per_person: float = air_per_person
-        self.air_emission: float = air_emissions
-        self.air_process: float = air_process
-        self.air_minimum: float = air_minimum
-        self.regular_ventilation: bool = regular_ventilasjon
-        self.displacement_ventilation: bool = displacement_ventilation
-        self.heat_exchange: str = heat_exchange
+        self.room_population: int = population
+        self.air_per_person: float = data[f'{room_type}']['luftmengder']['m3_per_person']
+        self.air_emission: float = data[f'{room_type}']['luftmengder']['m3_emisjon']
+        self.air_process: float = data[f'{room_type}']['luftmengder']['m3_prossess']
+        self.air_minimum: float = data[f'{room_type}']['luftmengder']['minimum_per_m2']
+        self.regular_ventilation: bool = data[f'{room_type}']['luftfordeling']['omroring']
+        self.displacement_ventilation: bool = data[f'{room_type}']['luftfordeling']['fortrengning']
+        self.heat_exchange = ""
+        self.heat_exchange_rotate: str = data[f'{room_type}']['varmegjenvinner']['roterende']
+        self.heat_exchange_plate: str = data[f'{room_type}']['varmegjenvinner']['plate']
+        self.heat_exchange_battery: str = data[f'{room_type}']['varmegjenvinner']['batteri']
+        if self.heat_exchange_rotate == True:
+            self.heat_exchange += "R"
+        if self.heat_exchange_plate == True:
+            self.heat_exchange += "P"
+        if self.heat_exchange_battery == True:
+            self.heat_exchange += "B"
         self.room_control = {
-            "vav": vav,
-            "cav": cav,
-            "temp": temp,
-            "co2": co2,
-            "movement": movement,
-            "moisture": moisture,
-            "time": time
+            "vav": data[f'{room_type}']['styring']['vav'],
+            "cav": data[f'{room_type}']['styring']['cav'],
+            "temp": data[f'{room_type}']['styring']['temp'],
+            "co2": data[f'{room_type}']['styring']['co2'],
+            "movement": data[f'{room_type}']['styring']['bevegelse'],
+            "moisture": data[f'{room_type}']['styring']['fukt'],
+            "time": data[f'{room_type}']['styring']['tid']
         }
-        self.notes: str = notes
-        self.activity: str = activity
+        self.room_controls = self.get_room_controls()
+        self.notes: str = data[f'{room_type}']['presiseringer']
+        self.activity: str = data[f'{room_type}']['aktivitet']
         self.sound = {
-            "db_teknisk": db_teknisk,
-            "db_rw_naborom": db_rw_naborom,
-            "db_rw_korridor": db_rw_korridor
+            "db_teknisk": data[f'{room_type}']['lydkrav']['teknisk'],
+            "db_rw_naborom": data[f'{room_type}']['lydkrav']['rw_naborom'],
+            "db_rw_korridor": data[f'{room_type}']['lydkrav']['rw_korridor']
         }
-        self.additional: str = additional
+        self.additional: str = data[f'{room_type}']['kommentar']
 
         self.chosen_air_supply: float = 0
         self.chosen_air_exhaust = 0
-        self.system: str = ""
+        self.system: str = system
 
+    def get_ventilation_sum_persons(self) -> float:
+        return self.room_population * self.air_per_person
+
+    def get_sum_emission(self) -> float:
+        return self.area * self.air_emission
 
     def get_required_air(self) -> float:
         room_required_persons = self.room_population * self.air_per_person
@@ -49,33 +68,25 @@ class Room():
     def get_air_per_area(self) -> float:
         return self.chosen_air_supply / self.area
 
-class RoomUndervisningsAreal:
-    def __init__(self, room_number: str, room_name: str, area: float, population: int):
-        self.room_number: str = room_number
-        self.room_name: str = room_name
-        self.room_area: float = area
-        self.room_population: int = population
-        self.room = Room(self.room_area,
-                         self.room_population,
-                        26,
-                        7.2,
-                        0,
-                        3.6,
-                        True,
-                        False,
-                        "R",
-                        True,
-                        False,
-                        True,
-                        True,
-                        False,
-                        False,
-                        False,
-                        "",
-                        "",
-                        28,
-                        48,
-                        34,
-                        "")
-    def get_room(self):
-        return self.room
+    def get_ventilation_principle(self) -> str:
+        if self.displacement_ventilation == False:
+            return "Fortrengning"
+        else:
+            return "Omrøring"
+    def get_room_controls(self) -> str:
+        room_controls = ""
+        if self.room_control['vav'] == True:
+           room_controls += "VAV,"
+        if self.room_control['cav'] == True:
+            room_controls += "CAV,"
+        if self.room_control['temp'] == True:
+            room_controls += "T,"
+        if self.room_control['co2'] == True:
+            room_controls += "C,"
+        if self.room_control['movement'] == True:
+            room_controls += "B,"
+        if self.room_control['moisture'] == True:
+            room_controls += "F,"
+        if self.room_control['time'] == True:
+            room_controls +="Tid"
+        return room_controls
