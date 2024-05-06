@@ -1,5 +1,5 @@
 import sys
-from rooms import *
+from rooms import Room, RoomRow
 from PyQt6.QtWidgets import(QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout,
                             QToolBar, QMessageBox, QPushButton)
 from PyQt6.QtCore import Qt,QSize
@@ -7,10 +7,12 @@ from PyQt6.QtGui import QIcon, QAction
 
 # sqlite
 
+
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.rooms = []
 
         self.setWindowTitle("Romskjema")
         self.setGeometry(100, 100, 2048, 1024)
@@ -31,8 +33,9 @@ class MainWindow(QMainWindow):
         self.table.horizontalHeader().resizeSection(13, 150)
         self.table.horizontalHeader().resizeSection(16, 100)
         self.table.horizontalHeader().resizeSection(len(self.table_headers)-1, 150)
-        self.table.setRowCount(1)
+        self.table.setRowCount(0)
         self.table.setHorizontalHeaderLabels(self.table_headers)
+        self.table.verticalHeader().setMinimumWidth(50)
         self.setCentralWidget(self.table)
 
 
@@ -46,7 +49,7 @@ class MainWindow(QMainWindow):
         self.new_action = QAction('&Nytt rom', self)
         self.new_action.setStatusTip('Nytt rom')
         self.new_action.setShortcut('Ctrl+N')
-        self.new_action.triggered.connect(self.new_room)
+        #self.new_action.triggered.connect(self.new_room)
         self.file_menu.addAction(self.new_action)
 
         # open menu item
@@ -73,9 +76,9 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.exit_action)
 
         # edit menu
-        self.undo_action = QAction('&Angre', self)
-        self.undo_action.setStatusTip('Angre')
-        self.undo_action.setShortcut('Ctrl+Z')
+        self.undo_action = QAction('&Slett', self)
+        self.undo_action.setStatusTip('Slett')
+        self.undo_action.setShortcut('Del')
         #self.undo_action.triggered.connect()
         self.edit_menu.addAction(self.undo_action)
 
@@ -106,40 +109,47 @@ class MainWindow(QMainWindow):
         # status bar
         self.status_bar = self.statusBar()
         self.show()
-
-
-
-
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-    def new_room(self):
-        new_room = Room("undervisningsrom","1", "A-12354", "Klasserom", 35, 150, "360.001")
+        # TEST ROOMs
+        self.new_room("undervisningsrom","1", "A-12354", "Klasserom", 35, 150, "360.001")
+        self.new_room("grupperom","1", "A-13254", "Grupperom", 35, 150, "360.001")
+        self.new_room("vestibyle","1", "A-13333", "Vestibyle", 100, 250, "360.001")
+        self.new_room("korridor","1", "A-9999", "korridor", 10, 100, "360.001")
+        self.new_room("bibliotek","1", "A-13232", "bibliotek", 50, 500, "360.001")
+
+    def new_room(self, type, floor, room_number, name, population, area, system):
         row = self.table.rowCount()
         self.table.insertRow(row)
-        self.table.setItem(row, 0, QTableWidgetItem(new_room.floor))
-        self.table.setItem(row, 1, QTableWidgetItem(new_room.room_number))
-        self.table.setItem(row, 2, QTableWidgetItem(new_room.room_name))
-        self.table.setItem(row, 3, QTableWidgetItem(f"{new_room.area} m2"))
-        self.table.setItem(row, 4, QTableWidgetItem(f"{new_room.room_population} stk"))
-        self.table.setItem(row, 5, QTableWidgetItem(f"{new_room.air_per_person} m3/h"))
-        self.table.setItem(row, 6, QTableWidgetItem(f"{new_room.get_ventilation_sum_persons()} m3/h"))
-        self.table.setItem(row, 7, QTableWidgetItem(f"{new_room.air_emission} m3/h"))
-        self.table.setItem(row, 8, QTableWidgetItem(f"{new_room.get_sum_emission()} m3/h"))
-        self.table.setItem(row, 9, QTableWidgetItem(f"{new_room.air_process} m3/h"))
-        self.table.setItem(row, 10, QTableWidgetItem(f"{new_room.get_required_air()} m3/h"))
-        self.table.setItem(row, 11, QTableWidgetItem(f"{new_room.chosen_air_supply} m3/h"))
-        self.table.setItem(row, 12, QTableWidgetItem(f"{new_room.chosen_air_exhaust} m3/h"))
-        self.table.setItem(row, 13, QTableWidgetItem(f"{new_room.get_air_per_area()} m3/m2"))
-        self.table.setItem(row, 14, QTableWidgetItem(f"{new_room.heat_exchange}"))
-        self.table.setItem(row, 15, QTableWidgetItem(new_room.get_ventilation_principle()))
-        self.table.setItem(row, 16, QTableWidgetItem(new_room.get_room_controls()))
-        self.table.setItem(row, 17, QTableWidgetItem(new_room.system))
+        
+        new_room = Room(type, floor, room_number, name, population, area, system)
+        self.rooms.append(new_room)
 
-    def remove_room(self, row_number: int) -> None:
+        new_room_row = RoomRow(new_room, row)
+        
+        
+        button = QPushButton("Fjern")
+        button.clicked.connect(lambda: self.remove_room(row))
+        
+        for i in range(len(new_room_row.columns)):
+            self.table.setItem(row, i, new_room_row.columns[i])
+    
+    # get room-index based on room_number from self.rooms-list
+    def find_room(self, room_number):
+        for i in range(len(self.rooms)):
+            if self.rooms[i].get_room_number() == room_number:
+                return i
+    
+        
+    def remove_room(self) -> None:
         message = QMessageBox.question(self, "Confirmation", "Fjerne rad?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        current_row = self.table.currentRow()
         if message == QMessageBox.StandardButton.Yes:
-            print("removed")
+            room_number = self.table.item(current_row, 1).text()
+            self.rooms.pop(self.find_room(room_number))
+            self.table.removeRow(current_row)
+            
 
 
 if __name__ == "__main__":
@@ -147,3 +157,5 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+        
+        
