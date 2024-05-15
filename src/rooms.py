@@ -51,6 +51,9 @@ class Room():
         self.chosen_air_supply: float = 0
         self.chosen_air_exhaust = 0
         self.system: str = system
+        self.table_data = [self.floor, self.room_number, self.room_name, f"{self.area} m2", f"{self.room_population} stk", f"{self.air_per_person} m3/h", f"{self.get_ventilation_sum_persons()} m3/h",
+                           f"{self.air_emission} m3/h", f"{self.get_sum_emission()} m3/h", f"{self.air_process} m3/h", f"{self.get_required_air()} m3/h", f"{self.chosen_air_supply} m3/h",
+                           f"{self.chosen_air_exhaust} m3/h", f"{self.get_air_per_area()} m3/m2", f"{self.heat_exchange}", self.get_ventilation_principle(), self.get_room_controls(), self.system]
 
     def get_room_number(self) -> str:
         return self.room_number
@@ -95,26 +98,3 @@ class Room():
         if self.room_control['time'] == True:
             room_controls +="Tid"
         return room_controls
-
-class RoomRow:
-    def __init__ (self, new_room, row):
-        self.row = row
-        self.columns = []
-        self.columns.append(QTableWidgetItem(new_room.floor))
-        self.columns.append(QTableWidgetItem(new_room.room_number))
-        self.columns.append(QTableWidgetItem(new_room.room_name))
-        self.columns.append(QTableWidgetItem(f"{new_room.area} m2"))
-        self.columns.append(QTableWidgetItem(f"{new_room.room_population} stk"))
-        self.columns.append(QTableWidgetItem(f"{new_room.air_per_person} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.get_ventilation_sum_persons()} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.air_emission} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.get_sum_emission()} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.air_process} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.get_required_air()} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.chosen_air_supply} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.chosen_air_exhaust} m3/h"))
-        self.columns.append(QTableWidgetItem(f"{new_room.get_air_per_area()} m3/m2"))
-        self.columns.append(QTableWidgetItem(f"{new_room.heat_exchange}"))
-        self.columns.append(QTableWidgetItem(new_room.get_ventilation_principle()))
-        self.columns.append(QTableWidgetItem(new_room.get_room_controls()))
-        self.columns.append(QTableWidgetItem(new_room.system))

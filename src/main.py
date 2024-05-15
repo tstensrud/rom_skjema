@@ -1,116 +1,46 @@
 import sys
-from rooms import Room, RoomRow
-from PyQt6.QtWidgets import(QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout,
-                            QToolBar, QMessageBox, QPushButton)
-from PyQt6.QtCore import Qt,QSize
-from PyQt6.QtGui import QIcon, QAction
+from rooms import Room
+import tkinter as tk
+from tkinter import ttk, messagebox, font
 
 # sqlite
 
 
-class MainWindow(QMainWindow):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
+class MainWindow:
+    def __init__(self):
+        
         self.rooms = []
 
-        self.setWindowTitle("Romskjema")
-        self.setGeometry(100, 100, 2048, 1024)
-        self.table_headers = ["Etasje", "Romnr", "Romnavn", "Areal", "Personer", "Luft per person",
-                              "Summert personbelastning", "Emisjon / m2", "Summert emisjon",
-                              "Prosess", "Dimensjonert", "Tilluft", "Avtrekk",
-                              "Valgt", "Gjenvinner", "Ventilasjonsprinsipp", "Styring", "System"]
-        self.table = QTableWidget(self)
-        self.table.setColumnCount(len(self.table_headers))
-        self.table.setHorizontalHeaderLabels(self.table_headers)
-        self.table.resizeColumnsToContents()
-        self.table.horizontalHeader().resizeSection(1, 100) # width of room-number cell
-        self.table.horizontalHeader().resizeSection(2, 150)
-        self.table.horizontalHeader().resizeSection(3, 75)
-        self.table.horizontalHeader().resizeSection(9, 100)
-        self.table.horizontalHeader().resizeSection(11, 100)
-        self.table.horizontalHeader().resizeSection(12, 100)
-        self.table.horizontalHeader().resizeSection(13, 150)
-        self.table.horizontalHeader().resizeSection(16, 100)
-        self.table.horizontalHeader().resizeSection(len(self.table_headers)-1, 150)
-        self.table.setRowCount(0)
-        self.table.setHorizontalHeaderLabels(self.table_headers)
-        self.table.verticalHeader().setMinimumWidth(50)
-        self.setCentralWidget(self.table)
+        self.root = tk.Tk()
+        self.root.title("Romskjema")
+        self.root.geometry(f"2100x1024")
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.pack(fill="both", expand=True)
 
+        # TABLE
+        self.columns=("etasje", "romnr", "romnavn", "areal", "antall_pers", "m3_per_pers", 
+                      "summert_pers", "emisjon", "sum_emisjon", "prossess", "dimensjonert", 
+                      "tilluft", "avtrekk", "valgt", "gjenvinner", "ventilasjon", "styring", "system")
+        self.room_table = ttk.Treeview(self.main_frame, columns=self.columns, show="headings")
+        for column in self.columns:
+            self.room_table.heading(column, text=column.capitalize().replace("_", " "))
 
-        self.menu_bar = self.menuBar()
+        self.room_table.pack(side="left", fill="both", expand=True)
+        self.scrollbar = ttk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.room_table.yview)
+        self.room_table.configure(yscroll=self.scrollbar.set)
+        self.scrollbar.pack(side="right", fill="y")
 
-        self.file_menu = self.menu_bar.addMenu('&Fil')
-        self.edit_menu = self.menu_bar.addMenu('&Rom')
-        self.help_menu = self.menu_bar.addMenu('&Hjelp')
-
-        # new menu item
-        self.new_action = QAction('&Nytt rom', self)
-        self.new_action.setStatusTip('Nytt rom')
-        self.new_action.setShortcut('Ctrl+N')
-        #self.new_action.triggered.connect(self.new_room)
-        self.file_menu.addAction(self.new_action)
-
-        # open menu item
-        self.open_action = QAction('&Fjern rom', self)
-        self.open_action.triggered.connect(self.remove_room)
-        self.open_action.setStatusTip('Fjern')
-        self.open_action.setShortcut('Ctrl+O')
-        self.file_menu.addAction(self.open_action)
-
-        # save menu item
-        self.save_action = QAction('&Lagre', self)
-        self.save_action.setStatusTip('Lagre')
-        self.save_action.setShortcut('Ctrl+S')
-        #self.save_action.triggered.connect()
-        self.file_menu.addAction(self.save_action)
-
-        self.file_menu.addSeparator()
-
-        # exit menu item
-        self.exit_action = QAction('&Avslutt', self)
-        self.exit_action.setStatusTip('Avslutt')
-        self.exit_action.setShortcut('Alt+F4')
-        #self.exit_action.triggered.connect()
-        self.file_menu.addAction(self.exit_action)
-
-        # edit menu
-        self.undo_action = QAction('&Slett', self)
-        self.undo_action.setStatusTip('Slett')
-        self.undo_action.setShortcut('Del')
-        #self.undo_action.triggered.connect()
-        self.edit_menu.addAction(self.undo_action)
-
-        self.redo_action = QAction('&Gjenta', self)
-        self.redo_action.setStatusTip('Gjenta')
-        self.redo_action.setShortcut('Ctrl+Y')
-        #self.redo_action.triggered.connect()
-        self.edit_menu.addAction(self.redo_action)
-
-        self.about_action = QAction( 'Om', self)
-        self.help_menu.addAction(self.about_action)
-        self.about_action.setStatusTip('Om')
-        self.about_action.setShortcut('F1')
-
-        # toolbar
-        self.toolbar = QToolBar('Verktøy')
-        self.addToolBar(self.toolbar)
-        self.toolbar.setIconSize(QSize(16, 16))
-
-        self.toolbar.addAction(self.new_action)
-        self.toolbar.addAction(self.open_action)
-        self.toolbar.addSeparator()
-
-        self.toolbar.addAction(self.undo_action)
-        self.toolbar.addAction(self.redo_action)
-        self.toolbar.addSeparator()
-
-        # status bar
-        self.status_bar = self.statusBar()
-        self.show()
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        for column in self.columns:
+            header_text = self.room_table.heading(column, 'text')
+            width = font.Font().measure(header_text)
+            self.room_table.column(column, width=width+50)
+        
+        # MENUBAR
+        self.menu_bar = tk.Menu(self.root)
+        self.menu_bar_options = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar_options.add_command(label="Fjern rom", command=self.remove_room)
+        self.menu_bar_options.add_command(label="Nytt rom", command=self.new_room)
+        self.menu_bar.add_cascade(label="Valg", menu=self.menu_bar_options)
 
         # TEST ROOMs
         self.new_room("undervisningsrom","1", "A-12354", "Klasserom", 35, 150, "360.001")
@@ -119,21 +49,18 @@ class MainWindow(QMainWindow):
         self.new_room("korridor","1", "A-9999", "korridor", 10, 100, "360.001")
         self.new_room("bibliotek","1", "A-13232", "bibliotek", 50, 500, "360.001")
 
+        #self.root.bind("<Configure>", self.on_resize)
+        self.root.configure(menu=self.menu_bar)
+        self.root.mainloop()
+
+    def on_resize(self, event):
+        print("Resized")
+
     def new_room(self, type, floor, room_number, name, population, area, system):
-        row = self.table.rowCount()
-        self.table.insertRow(row)
-        
         new_room = Room(type, floor, room_number, name, population, area, system)
         self.rooms.append(new_room)
-
-        new_room_row = RoomRow(new_room, row)
-        
-        
-        button = QPushButton("Fjern")
-        button.clicked.connect(lambda: self.remove_room(row))
-        
-        for i in range(len(new_room_row.columns)):
-            self.table.setItem(row, i, new_room_row.columns[i])
+        self.room_table.insert('', tk.END, values=new_room.table_data)
+            
     
     # get room-index based on room_number from self.rooms-list
     def find_room(self, room_number):
@@ -141,21 +68,16 @@ class MainWindow(QMainWindow):
             if self.rooms[i].get_room_number() == room_number:
                 return i
     
-        
-    def remove_room(self) -> None:
-        message = QMessageBox.question(self, "Confirmation", "Fjerne rad?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        current_row = self.table.currentRow()
-        if message == QMessageBox.StandardButton.Yes:
-            room_number = self.table.item(current_row, 1).text()
-            self.rooms.pop(self.find_room(room_number))
-            self.table.removeRow(current_row)
-            
-
+    # remove room from table and from self.rooms
+    def remove_room(self) -> None:       
+        if messagebox.askokcancel(title="Fjern rom", message="Vil du fjerne rom?"):
+            for selected_item in self.room_table.selection():
+                row_values = self.room_table.item(selected_item, 'values')
+                room_number = row_values[1]
+                self.rooms.pop(self.find_room(room_number))
+                self.room_table.delete(selected_item)
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
     window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
         
         
