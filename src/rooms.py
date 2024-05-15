@@ -1,11 +1,11 @@
 import json
 import os
-from PyQt6.QtWidgets import( QTableWidgetItem, QPushButton)
 
 class Room():
     def __init__(self, room_type: str, floor: str, room_number: str, room_name: str,
                  population: int, area: float, system: str):
-        json_file_path = os.path.join(os.path.dirname(__file__), "json", "skok.json")
+        self.specification = "skok"
+        json_file_path = os.path.join(os.path.dirname(__file__), "json", f"{self.specification}.json")
         with open(json_file_path) as jfile:
             data = json.load(jfile)
         self.floor = floor
