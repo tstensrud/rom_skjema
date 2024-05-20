@@ -1,13 +1,21 @@
 import json
 import os
+from db import new_room, load_room_types
 
 class Room():
-    def __init__(self, room_type: str, floor: str, room_number: str, room_name: str,
+    def __init__(self, specification, building: str, room_type: str, floor: str, room_number: str, room_name: str,
                  population: int, area: float, system: str):
-        self.specification = "skok"
+        
+        self.specification = specification
+        
+        # LOAD JSON DATA
         json_file_path = os.path.join(os.path.dirname(__file__), "json", f"{self.specification}.json")
         with open(json_file_path) as jfile:
             data = json.load(jfile)
+        
+        # SET VARIABLES FROM JSON FILE ACCORDING TO CURRENT SPECIFICATION
+        self.building = building
+        self.room_type = room_type
         self.floor = floor
         self.room_number = room_number
         self.room_name = room_name
@@ -18,7 +26,7 @@ class Room():
         self.air_process: float = data[f'{room_type}']['luftmengder']['m3_prossess']
         self.air_minimum: float = data[f'{room_type}']['luftmengder']['minimum_per_m2']
         self.regular_ventilation: bool = data[f'{room_type}']['luftfordeling']['omroring']
-        self.displacement_ventilation: bool = data[f'{room_type}']['luftfordeling']['fortrengning']
+        self.displacement_ventilation: bool = data[f'{room_type}']['luftfordeling']['fortrengning']       
         self.heat_exchange = ""
         self.heat_exchange_rotate: str = data[f'{room_type}']['varmegjenvinner']['roterende']
         self.heat_exchange_plate: str = data[f'{room_type}']['varmegjenvinner']['plate']
@@ -48,39 +56,33 @@ class Room():
         }
         self.additional: str = data[f'{room_type}']['kommentar']
 
-        self.chosen_air_supply: float = 0
-        self.chosen_air_exhaust = 0
+        # INITIAL CALCULATIONS FOR VENTILATION VALUES
+        self.sum_emissions = int(self.area * self.air_emission)
+        self.sum_air_people = int(self.room_population * self.air_per_person)
+        self.total_required_air_volume = int(self.sum_emissions + self.sum_air_people + self.air_process)
+        self.minimum_air = int(self.air_minimum * self.area)
+        self.chosen_air_supply: float = self.calculate_chosen_supply_volume()
+        self.chosen_air_exhaust: float = self.chosen_air_supply
+        self.sum_air_per_area = int(self.chosen_air_supply / self.area)
+        self.ventilation_principle = self.get_ventilation_principle()
         self.system: str = system
-        self.table_data = [self.floor, self.room_number, self.room_name, f"{self.area} m2", f"{self.room_population} stk", f"{self.air_per_person} m3/h", f"{self.get_ventilation_sum_persons()} m3/h",
-                           f"{self.air_emission} m3/h", f"{self.get_sum_emission()} m3/h", f"{self.air_process} m3/h", f"{self.get_required_air()} m3/h", f"{self.chosen_air_supply} m3/h",
-                           f"{self.chosen_air_exhaust} m3/h", f"{self.get_air_per_area()} m3/m2", f"{self.heat_exchange}", self.get_ventilation_principle(), self.get_room_controls(), self.system]
-
-    def get_room_number(self) -> str:
-        return self.room_number
+        
+        new_room(self.building, self.room_type, self.floor, self.room_number, self.room_name, self.area, self.room_population, self.air_per_person, self.sum_air_people, self.air_emission, self.sum_emissions,
+                 self.air_process, self.minimum_air, self.total_required_air_volume, self.chosen_air_supply, self.chosen_air_exhaust, self.sum_air_per_area, self.ventilation_principle,
+                 self.heat_exchange, self.room_controls, self.notes, self.sound['db_teknisk'], self.sound['db_rw_naborom'], self.sound['db_rw_korridor'], self.system, self.additional)
+        
     
-    def get_ventilation_sum_persons(self) -> float:
-        return self.room_population * self.air_per_person
-
-    def get_sum_emission(self) -> float:
-        return self.area * self.air_emission
-
-    def get_required_air(self) -> float:
-        room_required_persons = self.room_population * self.air_per_person
-        room_required_emissions = self.area * self.air_emission
-        room_requirement = room_required_persons + room_required_emissions + self.air_process
-        return room_requirement
-
-    def get_minium_air(self) -> float:
-        return self.air_minimum * self.area
-
-    def get_air_per_area(self) -> float:
-        return self.chosen_air_supply / self.area
+    def calculate_chosen_supply_volume(self) -> float:
+        for i in range(self.total_required_air_volume, self.total_required_air_volume + 10):
+            if i % 10 == 0:
+                return i
 
     def get_ventilation_principle(self) -> str:
-        if self.displacement_ventilation == False:
+        if self.displacement_ventilation == True:
             return "Fortrengning"
         else:
             return "Omrøring"
+    
     def get_room_controls(self) -> str:
         room_controls = ""
         if self.room_control['vav'] == True:
