@@ -199,12 +199,1168 @@
       "fukt": false,
       "tid": false
     },
-    "presiseringer": "Lydkravene skal bearbeides avhengig av valgt løsning og planalgt bruk av disse rommene",
+    "presiseringer": "Lydkravene skal bearbeides avhengig av valgt losning og planalgt bruk av disse rommene",
     "aktivitet": "",
     "lydkrav": {
       "teknisk": "28dBA",
       "rw_naborom": "48dB",
       "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  },
+  "kunst_handverk_trearbeid_hardematerialer": {
+    "luftmengder": {
+      "m3_per_person": 50,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Sponavsug ved enkelte maskiner og elevenes arbeidsbenker",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "60dB",
+      "rw_korridor": "50dB"
+    },
+    "kommentar": ""
+  },
+  "kunst_handverk_leire_maling": {
+    "luftmengder": {
+      "m3_per_person": 40,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 400,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Rom for kermamikkovn: avtrekk 500m3/h, kan reguleres ned til minimum naar ovn ikke er i bruk",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  },
+  "kunst_handverk_tekn_design_tekstil_skaperverksted": {
+    "luftmengder": {
+      "m3_per_person": 40,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 400,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Punktavsug med avtrekk, 80m3/h per stk",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  },
+  "naturfagsrom": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 200,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Avtreksskap med lufthastighet 0,5m/s over lukeaapning. Avtrekk fra skap skal ha separat avtrekk ut i det fri",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  },
+  "forberedelse_naturfagsrom": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Avtreksskap med lufthastighet 0,5m/s over lukeaapning. Kjemikalieskap med 100m3/h avtrekk. Avtrekk fra skap skal ha separat avtrekk ut i det fri",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  },
+  "musikk_drama": {
+    "luftmengder": {
+      "m3_per_person": 50,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "25dBA",
+      "rw_naborom": "60dB",
+      "rw_korridor": "50dB"
+    },
+    "kommentar": ""
+  },
+  "musikk_dans_oving": {
+    "luftmengder": {
+      "m3_per_person": 75,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "25dBA",
+      "rw_naborom": "60dB",
+      "rw_korridor": "50dB"
+    },
+    "kommentar": ""
+  },
+  "kroppsoving": {
+    "luftmengder": {
+      "m3_per_person": 120,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Skillevegg mellom spilleflater skal ha Rw >= 28dB",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "60dB",
+      "rw_korridor": "50dB"
+    },
+    "kommentar": ""
+  },
+  "kroppsoving_garderobe_dusj": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 15,
+      "m3_prossess": 50,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": false,
+      "bevegelse": true,
+      "fukt": true,
+      "tid": false
+    },
+    "presiseringer": "All tilluft tilfores i garderobe, avtrekk overstromning  til dusj",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "kjokken_1_2_3": {
+    "luftmengder": {
+      "m3_per_person": 50,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 400,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Avtrekk 450m3/h per hette/komfyr. Grunnventilasjon paa minst 500m3/h. Hette over oppvaskmaskin av typen steamer/bakkemaskin minimum 450m3/h",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "kontorer": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "For kontorer skolehelse: Prosess paa 100m3/h",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  },
+  "moterom_hvilerom": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "38dB"
+    },
+    "kommentar": ""
+  },
+  "kopirom": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 150,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Undertrykk 150m3/h",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "personalrom": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "personalgarderobe": {
+    "luftmengder": {
+      "m3_per_person": 26,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": false,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "toalett_med_dusj": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 150,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Overstromning fra tilstotende areal, tilforsel ved gulv",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "vindfang": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 3.6,
+      "m3_prossess": 200,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Tilluft med overstromning inn til fellesareal",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "elevgarderober": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 15,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Overstromning fra tilstotende areal",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "wc": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 100,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": false,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Overstromning med avtrekk, tilforsel ved gulv",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "-",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "hcwc": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 150,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": false,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Overstromning med avtrekk, tilforsel ved gulv",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "-",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "lager_mat": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 3.6,
+      "m3_prossess": 200,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": false,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Overstromning med tilluft",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "lager_bod": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 3.6,
+      "m3_prossess": 200,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": false,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Overstromning fra tilstotende areal",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "renholdssentral": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 15,
+      "m3_prossess": 500,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": true,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": false,
+      "bevegelse": true,
+      "fukt": true,
+      "tid": false
+    },
+    "presiseringer": "Rommet skal ha minst 100m3/h undertrykk",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "33dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "bottekott": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 100,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": false,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Overstromning fra tilstotende areal",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "teknisk_ventilasjon": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 3.6,
+      "m3_prossess": 0,
+      "minimum_per_m2": 0
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "teknisk_energi": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 0
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "teknisk_el_ikt": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 3.6,
+      "m3_prossess": 0,
+      "minimum_per_m2": 0
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": true,
+      "temp": true,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "avfallsrom": {
+    "luftmengder": {
+      "m3_per_person": 0,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 7.2
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": false,
+      "cav": false,
+      "temp": false,
+      "co2": false,
+      "bevegelse": false,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Eget avtrekk dersom eget rom",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "-",
+      "rw_naborom": "-",
+      "rw_korridor": "-"
+    },
+    "kommentar": ""
+  },
+  "vgs_undervisningsrom": {
+    "luftmengder": {
+      "m3_per_person": 35,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 0,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": true,
+      "plate": false,
+      "batteri": false
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Eget avtrekk dersom eget rom",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "vgs_mekanisk_fag": {
+    "luftmengder": {
+      "m3_per_person": 50,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 400,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Eget avtrekk dersom eget rom",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "vgs_bygg_anlegg": {
+    "luftmengder": {
+      "m3_per_person": 50,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 400,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Eget avtrekk dersom eget rom",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "vgs_helse_oppvekst": {
+    "luftmengder": {
+      "m3_per_person": 50,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 400,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Eget avtrekk dersom eget rom",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "vgs_frisor": {
+    "luftmengder": {
+      "m3_per_person": 50,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 400,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Eget avtrekk dersom eget rom",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
+    },
+    "kommentar": ""
+  },
+  "vgs_naturfag_kjemi": {
+    "luftmengder": {
+      "m3_per_person": 35,
+      "m3_emisjon": 7.2,
+      "m3_prossess": 600,
+      "minimum_per_m2": 3.6
+    },
+    "luftfordeling": {
+      "omroring": true,
+      "fortrengning": false
+    },
+    "varmegjenvinner": {
+      "roterende": false,
+      "plate": true,
+      "batteri": true
+    },
+    "styring": {
+      "vav": true,
+      "cav": false,
+      "temp": true,
+      "co2": true,
+      "bevegelse": true,
+      "fukt": false,
+      "tid": false
+    },
+    "presiseringer": "Avtreksskap med lufthastighet 0,5m/s over lukeaapning. Kjemikalieskap med 100m3/h avtrekk. Avtrekk fra skap skal ha separat avtrekk ut i det fri",
+    "aktivitet": "",
+    "lydkrav": {
+      "teknisk": "28dBA",
+      "rw_naborom": "48dB",
+      "rw_korridor": "34dB"
     },
     "kommentar": ""
   }
