@@ -3,11 +3,25 @@ import os
 import json
 from prettytable import PrettyTable
 import sqlite3
+from contextlib import contextmanager
 
-DB_NAME = "./db/rooms.db"
+DB_PATH = "./db/rooms.db"
+
+@contextmanager
+def get_cursor():
+    connect = sqlite3.connect(DB_PATH)
+    cursor = connect.cursor()
+    try:
+        yield cursor
+        connect.commit()
+    except sqlite3.Error as e:
+        error_message(e)
+    finally:
+        cursor.close()
+        connect.close()
 
 def create_skok_table():
-    connect = sqlite3.connect(DB_NAME)
+    connect = sqlite3.connect(DB_PATH)
     cursor = connect.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS rooms (
@@ -49,10 +63,8 @@ def new_room(bygg: str, room_type: str, floor: str, roomnr: str, roomname: str, 
              air_min: float, air_demand: float, air_supply: float, air_extract: float, air_chosen: float,
              ventilation_principle: str, heat_exchange: str, room_control: str, notes: str, 
              db_teknisk: str, db_rw_nabo: str, db_rw_korr: str, system: str, aditional: str) -> None:   
-    try:
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
-        insert = """INSERT INTO rooms (
+    with get_cursor() as cursor:
+        query = """INSERT INTO rooms (
                     bygg,
                     room_type, 
                     floor, 
@@ -81,40 +93,25 @@ def new_room(bygg: str, room_type: str, floor: str, roomnr: str, roomname: str, 
                     aditional
                     ) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-        cursor.execute(insert, (bygg, room_type, floor, roomnr, roomname, area, pop, air_pp, air_per_person_sum, air_emission, air_emission_sum,
+        cursor.execute(query, (bygg, room_type, floor, roomnr, roomname, area, pop, air_pp, air_per_person_sum, air_emission, air_emission_sum,
                                 air_process, air_min, air_demand, air_supply, air_extract, air_chosen, ventilation_principle,
                                 heat_exchange, room_control, notes, db_teknisk, db_rw_nabo, db_rw_korr, system, aditional))
-        connect.commit()
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
 
 # FIND IF ROOM-NUMBER ALREADY EXISTS.
 def check_if_room_number_exists(room_number: str) -> bool:
-    try:
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
+    with get_cursor() as cursor:
         cursor.execute("SELECT * FROM rooms WHERE roomnr=?", (room_number,))
         result = cursor.fetchone()
         if result is not None:
             return True
         else:
             return False
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
 
 # RETURN ROOM DATA FROM SPECIFIC ROOM FOR TABLE ON MAIN WINDOW.
 # USED WHEN ADDING NEW ROOM
 def get_room(room_number: str):
-    try:
+    with get_cursor() as cursor:
         result = ()
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
         cursor.execute("""
                     SELECT id, bygg, floor, roomnr, roomname, area, room_population, air_per_person, 
                     air_person_sum, air_emission, air_emission_sum, air_process, air_demand,
@@ -123,35 +120,19 @@ def get_room(room_number: str):
                     FROM rooms 
                     WHERE roomnr=?""", (room_number,))
         result = cursor.fetchone()
-        connect.commit()
-        
         return add_units_to_room_data(result, True)
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
     
 # DELETE ROOM FROM TABLE
 def delete_room(room_number: str) -> None:
-    try:
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()    
+    with get_cursor() as cursor:    
         cursor.execute("""DELETE FROM rooms WHERE roomnr=?""",(room_number,))
-        connect.commit()
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
+        print(f"Room {room_number} deleted")
 
 # GET ALL DATA FROM ROOMS TO PLACE ON TABLE IN MAIN WINDOW
 # ARGUMENT IS FOR WHAT LIST SHOULD BE SORTED BY
 def get_all_rooms(order: str):
-    try:
+    with get_cursor() as cursor:
         rows = []
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
         if order is not None:
             query = f"""
                 SELECT id, bygg, floor, roomnr, roomname, area, room_population, air_per_person, 
@@ -172,14 +153,9 @@ def get_all_rooms(order: str):
                 """
         cursor.execute(query)
         rows = cursor.fetchall()
-        connect.commit()
         rows_with_unit_data = add_units_to_room_data(rows, False)
         return rows_with_unit_data
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
+
 
 # THIS METHOD ADDS UNITS TO THE ROOM-DATA FOR BETTER READABILITY IN THE TABLE
 # E.G. AREA GETS ADDED m2
@@ -222,59 +198,32 @@ def error_message(error: str) -> None:
 
 # RETURN SUM OF A COLUMN(s)
 def get_sum_of_column(columns) -> float:
-    try:
+    with get_cursor() as cursor:
         column_sums = []
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
         for column in columns:
             query = f"""SELECT SUM({column}) FROM rooms"""
             cursor.execute(query)
             result = cursor.fetchone()
-            connect.commit()
             column_sums.append(result[0])
         return column_sums
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
 
 # RETURNS THE TOTAL AIR VOLUME OF GIVEN SYSTEM
 def get_total_air_volume_system(system: str) -> float:
-    try:
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
+    with get_cursor() as cursor:
         cursor.execute("SELECT air_supply FROM rooms WHERE system = ?", (system,))
         result = cursor.fetchall()
-        connect.commit()
         volumes = [volume[0] for volume in result]
         volume = 0
         for val in volumes:
             volume += val
         return volume
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
 
 # GET ALL VENTILATION SYSTEMS
 def get_ventilation_systems():
-    try:
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
-        cursor.execute("""
-                       SELECT DISTINCT system 
-                       FROM rooms
-                       """)
-        connect.commit()
+    with get_cursor() as cursor:
+        cursor.execute("SELECT DISTINCT system FROM rooms")
         result = cursor.fetchall()
         return ([system[0] for system in result]) # return list of strings
-    except sqlite3.Error as e:
-        error_message(e)
-    finally:
-        if connect:
-            connect.close()
 
 # LOAD ALL ROOM TYPES IN A SPECIFICTAION FROM JSON FILE
 def load_room_types(specification: str):
@@ -288,56 +237,110 @@ def load_room_types(specification: str):
 
 # CHANGE SPECIFIC TABLE VALUE
 # USED WHEN USER IS UPDATING A CELL MANUALLY
-def update_table_value(room_id: str, column: str, new_value) -> bool:
-    try:
-        column_name = get_column_name(column)
-        connect = sqlite3.connect(DB_NAME)
-        cursor = connect.cursor()
+def update_db_table_value(room_id: str, column_id: str, new_value) -> bool:
+    with get_cursor() as cursor:
+        column_name = get_column_name(column_id)
         query = f"""UPDATE rooms 
                     SET {column_name} = ?
-                    WHERE id = ?
-        """
+                    WHERE id = ? """
         cursor.execute(query, (new_value, room_id))
-        connect.commit()
-        return True
-    except sqlite3.Error as e:
-        error_message(e)
-        return False
-    finally:
-        if connect:
-            connect.close()
+        print(f"Room-ID {room_id} changed column {column_name} to {new_value}")
+    
+    # only change in area, room_population, process, supply and extract requires recalculation
+    recalc_set = {"area", "room_population", "air_process", "air_supply"}
+    recalc_dict = {
+        "area": recalculate_based_on_area,
+        "room_population": recalculate_based_on_population,
+        "air_process": recalculate_air_demand,
+        "air_supply": recalculate_based_on_supply
+    }
+    if column_name in recalc_set:    
+        recalc_dict[column_name](room_id)
+    
+    return True
+
+# RECALCULATE VALUES IF AREA CHANGES
+# EMISSION_SUM-VALUE AND DEMAND-VALUE IS RECALCULATED
+def recalculate_based_on_area(room_id) -> None:
+    with get_cursor() as cursor:
+        query = """SELECT area, air_emission, air_emission_sum, air_demand FROM rooms WHERE id=?"""
+        cursor.execute(query, (room_id,))
+        result = cursor.fetchall()
+        for value in result:
+            area, air_emission, air_emission_sum, air_demand = value
+        new_emission_sum = area * air_emission
+        new_air_demand = int(air_demand - air_emission_sum + new_emission_sum)
+        update = "UPDATE rooms SET air_emission_sum = ?, air_demand = ? WHERE id = ?"
+        cursor.execute(update, (new_emission_sum, new_air_demand, room_id))
+    recalculate_air_demand(room_id)
+
+# RECALCULATE VALUES IF POPULATION CHANGES
+# POPULATION_SUM-VALUE AND DEMAND-VALUE IS RECALCULATED
+def recalculate_based_on_population(room_id):
+    with get_cursor() as cursor:
+        query = """SELECT room_population, air_per_person, air_person_sum, air_demand FROM rooms WHERE id=?"""
+        cursor.execute(query, (room_id,))
+        result = cursor.fetchall()
+        for value in result:
+            room_population, air_per_person, air_person_sum, air_demand = value
+        new_person_sum = room_population * air_per_person
+        new_air_demand = int(air_demand - air_person_sum + new_person_sum)
+        update = "UPDATE rooms SET air_person_sum = ?, air_demand = ? WHERE id = ?"
+        cursor.execute(update, (new_person_sum, new_air_demand, room_id))
+    recalculate_air_demand(room_id)
+
+# RECALCULATE VALUES IF PROCESS CHANGES
+# DEMAND-VALUE IS RECALCULATED
+def recalculate_air_demand(room_id):
+    with get_cursor() as cursor:
+        query = """SELECT  air_person_sum, air_emission_sum, air_process FROM rooms WHERE id=?"""
+        cursor.execute(query, (room_id,))
+        result = cursor.fetchall()
+        for value in result:
+            air_person_sum, air_emission_sum, air_process = value
+        new_air_demand = int(air_person_sum + air_emission_sum + air_process)
+        update = "UPDATE rooms SET air_demand = ? WHERE id = ?"
+        cursor.execute(update, (new_air_demand, room_id))
+
+# RECALCULATE VALUES IF SUPPLY CHANGES
+# AIR CHOSEN IS RECALCULATED (m3/m2)
+def recalculate_based_on_supply(room_id):
+    with get_cursor() as cursor:
+        query = """SELECT  area, air_supply FROM rooms WHERE id=?"""
+        cursor.execute(query, (room_id,))
+        result = cursor.fetchall()
+        for value in result:
+            area, air_supply = value
+        new_air_chosen = int(air_supply / area)
+        update = "UPDATE rooms SET air_chosen = ? WHERE id = ?"
+        cursor.execute(update, (new_air_chosen, room_id))
 
 # RETURN COLUMN NAME BASED ON COLUMN_ID FROM TREEVIEW
 # ONLY VALUES THAT SHOULD CHANGE ARE IN HERE.
 def get_column_name(column_id) -> str:
-    if column_id == "#2":
-        return "bygg"
-    elif column_id == "#3":
-        return "floor"
-    elif column_id == "#4":
-        return "roomnr"
-    elif column_id == "#5":
-        return "roomname"
-    elif column_id == "#6":
-        return "area"
-    elif column_id == "#7":
-        return "room_population"
-    elif column_id == "#8":
-        return "air_per_person"
-    elif column_id == "#9":
-        return "air_emission"
-    elif column_id == "#12":
-        return "air_process"
-    elif column_id == "#14":
-        return "air_supply"
-    elif column_id == "#15":
-        return "air_extract"
-    elif column_id == "#20":
-        return "system"
+    column_map = {
+        "#2": "bygg",
+        "#3": "floor",
+        "#4": "roomnr",
+        "#5": "roomname",
+        "#6": "area",
+        "#7": "room_population",
+        "#8": "air_per_person",
+        "#9": "air_emission",
+        "#12": "air_process",
+        "#14": "air_supply",
+        "#15": "air_extract",
+        "#20": "system"
+    }
+    return column_map.get(column_id)
 
+
+
+
+# for testing purposes
 def fetch_all_data():
     try:
-        connect = sqlite3.connect(DB_NAME)
+        connect = sqlite3.connect(DB_PATH)
         cursor = connect.cursor()
         
         # Fetch all records
@@ -366,10 +369,9 @@ def fetch_all_data():
         if connect:
             connect.close()
 
-
 def new_column(column):
     try:
-        connect = sqlite3.connect(DB_NAME)
+        connect = sqlite3.connect(DB_PATH)
         cursor = connect.cursor()
         
         # Construct the SQL statement

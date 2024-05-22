@@ -1,6 +1,6 @@
 from rooms import Room
 import tkinter as tk
-import db
+import db_operations as db_operations
 from tkinter import ttk, messagebox, font
 
 class MainWindow:
@@ -67,7 +67,7 @@ class MainWindow:
 
     # SUMMARY OF SYSTEMS DATA. UPDATES ON ADDING AND REMOVING ROOMS
     def update_top_frame_summary(self):
-        systems = db.get_ventilation_systems()
+        systems = db_operations.get_ventilation_systems()
         systems.sort()
         # clear all widgest
         for widget in self.top_frame.winfo_children():
@@ -75,7 +75,7 @@ class MainWindow:
         # draw updated list of widgets
         for i in range(len(systems)):
             label_system = tk.Label(self.top_frame, text=f"{systems[i]}")
-            label_volume = tk.Label(self.top_frame, text=f"{db.get_total_air_volume_system(systems[i])} m3/h")
+            label_volume = tk.Label(self.top_frame, text=f"{db_operations.get_total_air_volume_system(systems[i])} m3/h")
             label_system.grid(column=i, row=0, padx=10, pady=5)
             label_volume.grid(column=i, row=1, padx=10, pady=2)
     
@@ -100,7 +100,7 @@ class MainWindow:
         
         # combobox with room types
         rooms: str = []
-        for room in db.load_room_types("skok"):
+        for room in db_operations.load_room_types("skok"):
             rooms.append(room)
         self.new_room_combobox = ttk.Combobox(self.new_room_window_frame, values=rooms)
         self.new_room_combobox.set("Romtype")
@@ -154,7 +154,7 @@ class MainWindow:
         row_id = self.room_table.identify_row(event.y)
         last_row = self.room_table.get_children()
         print(row_id)
-        locked_columns=["#1", "#8", "#9", "#10", "#11", "#13", "#16", "#17", "#18", "#19"]
+        locked_columns={"#1", "#8", "#9", "#10", "#11", "#13", "#16", "#17", "#18", "#19"}
         if column in locked_columns:
             return
         item = self.room_table.item(row_id)
@@ -174,13 +174,17 @@ class MainWindow:
         bbox = self.room_table.bbox(row_id, column)
         if bbox:
             self.cell_entry.place(x=bbox[0], y=bbox[1], width=bbox[2], height=bbox[3])
-        self.cell_entry.bind('<Return>', lambda e: self.update_cell_value(row_id, column, row_identifier))
-        self.cell_entry.bind('<FocusOut>', lambda e: self.update_cell_value(row_id, column, row_identifier))
+        self.cell_entry.bind('<Return>', lambda e: self.update_cell_value(row_id, column, row_identifier, value))
+        self.cell_entry.bind('<FocusOut>', lambda e: self.update_cell_value(row_id, column, row_identifier, value))
     
     # CHANGE DATABASE ACCORDING TO NEW CELL VALUE
-    def update_cell_value(self, row_id, column, row_identifier) -> None:
+    def update_cell_value(self, row_id, column, row_identifier, old_value) -> None:
         new_value = self.cell_entry.get()
-        if db.update_table_value(row_identifier, column, new_value):
+        if new_value == old_value:
+            self.cell_entry.destroy()
+            self.cell_entry = None
+            return
+        if db_operations.update_db_table_value(row_identifier, column, new_value):
             self.room_table.set(row_id, column, new_value)
             self.cell_entry.destroy()
             self.cell_entry = None
@@ -196,7 +200,7 @@ class MainWindow:
         room_type: str = self.new_room_combobox.get()
         floor: str = self.new_room_floor_entry.get()
         room_number: str = self.new_room_roomnr_entry.get()
-        if db.check_if_room_number_exists(room_number):
+        if db_operations.check_if_room_number_exists(room_number):
             messagebox.showerror(title="Feil", message="Romnummer finnes allerede")
             return
         name: str = self.new_room_roomname_entry.get()
@@ -235,9 +239,12 @@ class MainWindow:
     # LOAD ALL ROOMS FROM DATABASE
     # ARGUMENT IS FOR WHAT IT SHOULD BE SORTED AS
     def update_room_list(self, order) -> None:
+        # clear table
         for item in self.room_table.get_children():
             self.room_table.delete(item)
-        rooms = db.get_all_rooms(order)
+        rooms = db_operations.get_all_rooms(order)
+        
+        # insert updated table values
         for room in rooms:
             self.room_table.insert('', tk.END, values=room)
         summary_column = self.column_summaries()
@@ -246,7 +253,7 @@ class MainWindow:
     # SUMMARIZES THE COLUMNS THAT NEED TO BE SUMMARIZED
     # ADDED TO BOTTOM OF TABLE
     def column_summaries(self) -> tuple:
-        column_sums = db.get_sum_of_column(["area", "air_demand", "air_supply", "air_extract"])
+        column_sums = db_operations.get_sum_of_column(["area", "air_demand", "air_supply", "air_extract"])
         column_tuple = ("Sum", "","", "", "",f"{column_sums[0]} m2", "", "", "", "", "", "", f"{column_sums[1]} m3/h", 
                         f"{column_sums[2]} m3/h", f"{column_sums[3]} m3/h", "", "", "", "", "", "")
         return column_tuple
@@ -256,8 +263,8 @@ class MainWindow:
         if messagebox.askokcancel(title="Fjern rom", message="Vil du fjerne rom?"):
             for selected_item in self.room_table.selection():
                 row_values = self.room_table.item(selected_item, 'values')
-                room_number = row_values[1]
-                db.delete_room(room_number)
+                room_number = row_values[3]
+                db_operations.delete_room(room_number)
                 self.room_table.delete(selected_item)
                 self.update_top_frame_summary()
                 self.update_room_list(None)

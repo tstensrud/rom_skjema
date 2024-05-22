@@ -1,7 +1,13 @@
 import json
 import os
-from db import new_room, load_room_types
+from db_operations import new_room
 
+
+'''
+Room-class used when creating new room.
+Dont really think this is necessary as a class
+Rewriting it to methods is on TODO-list
+'''
 class Room():
     def __init__(self, specification, building: str, room_type: str, floor: str, room_number: str, room_name: str,
                  population: int, area: float, system: str):
@@ -71,7 +77,7 @@ class Room():
                  self.air_process, self.minimum_air, self.total_required_air_volume, self.chosen_air_supply, self.chosen_air_exhaust, self.sum_air_per_area, self.ventilation_principle,
                  self.heat_exchange, self.room_controls, self.notes, self.sound['db_teknisk'], self.sound['db_rw_naborom'], self.sound['db_rw_korridor'], self.system, self.additional)
         
-    
+    # round up to closest dividable by 10
     def calculate_chosen_supply_volume(self) -> float:
         for i in range(self.total_required_air_volume, self.total_required_air_volume + 10):
             if i % 10 == 0:
