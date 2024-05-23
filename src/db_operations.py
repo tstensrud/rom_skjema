@@ -1,7 +1,7 @@
 from tkinter import messagebox
 import os
 import json
-from prettytable import PrettyTable
+from prettytable import PrettyTable # for testing purposes
 import sqlite3
 from contextlib import contextmanager
 
@@ -20,7 +20,7 @@ def get_cursor():
         cursor.close()
         connect.close()
 
-def create_skok_table():
+def create_room_table():
     connect = sqlite3.connect(DB_PATH)
     cursor = connect.cursor()
     cursor.execute("""
@@ -97,19 +97,26 @@ def new_room(bygg: str, room_type: str, floor: str, roomnr: str, roomname: str, 
                                 air_process, air_min, air_demand, air_supply, air_extract, air_chosen, ventilation_principle,
                                 heat_exchange, room_control, notes, db_teknisk, db_rw_nabo, db_rw_korr, system, aditional))
 
-# FIND IF ROOM-NUMBER ALREADY EXISTS.
-def check_if_room_number_exists(room_number: str) -> bool:
+# FIND AND RETURN TRUE IF ROOM-NUMBER IN BUILDING ALREADY EXISTS.
+def check_if_room_number_exists(room_number: str, building: str) -> bool:
     with get_cursor() as cursor:
-        cursor.execute("SELECT * FROM rooms WHERE roomnr=?", (room_number,))
+        cursor.execute("SELECT * FROM rooms WHERE bygg = ? AND roomnr=?", (building, room_number,))
         result = cursor.fetchone()
         if result is not None:
             return True
         else:
             return False
 
+# RETURN ALL DATA FOR A SPECIFIC ROOM
+def get_room(room_number: str):
+    with get_cursor() as cursor:
+        cursor.execute("SELECT * FROM rooms WHERE id = ?", (room_number,))
+        result = cursor.fetchall()
+        return result
+
 # RETURN ROOM DATA FROM SPECIFIC ROOM FOR TABLE ON MAIN WINDOW.
 # USED WHEN ADDING NEW ROOM
-def get_room(room_number: str):
+def get_room_table_data(room_number: str):
     with get_cursor() as cursor:
         result = ()
         cursor.execute("""
@@ -155,7 +162,6 @@ def get_all_rooms(order: str):
         rows = cursor.fetchall()
         rows_with_unit_data = add_units_to_room_data(rows, False)
         return rows_with_unit_data
-
 
 # THIS METHOD ADDS UNITS TO THE ROOM-DATA FOR BETTER READABILITY IN THE TABLE
 # E.G. AREA GETS ADDED m2
@@ -334,8 +340,12 @@ def get_column_name(column_id) -> str:
     }
     return column_map.get(column_id)
 
-
-
+# RETURN LIST OF BUILDINGS
+def get_buildings():
+    with get_cursor() as cursor:
+        cursor.execute("SELECT DISTINCT bygg FROM rooms")
+        result = cursor.fetchall()
+        return ([building[0] for building in result])
 
 # for testing purposes
 def fetch_all_data():
@@ -385,4 +395,3 @@ def new_column(column):
     finally:
         if connect:
             connect.close()
-

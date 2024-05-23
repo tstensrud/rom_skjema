@@ -1,69 +1,81 @@
 import tkinter as tk
 from tkinter import ttk
 
-class EditableTreeviewApp:
+class DraggableNotebook(ttk.Notebook):
+    def __init__(self, master=None, **kw):
+        super().__init__(master, **kw)
+        self._active = None
+        self.bind('<ButtonPress-1>', self.on_press, True)
+        self.bind('<ButtonRelease-1>', self.on_release)
+        self.bind('<B1-Motion>', self.on_motion)
+
+    def on_press(self, event):
+        element = self.identify(event.x, event.y)
+        if "label" in element:
+            index = self.index("@%d,%d" % (event.x, event.y))
+            self._active = index
+
+    def on_release(self, event):
+        self._active = None
+
+    def on_motion(self, event):
+        if self._active is None:
+            return
+        element = self.identify(event.x, event.y)
+        if "label" in element:
+            index = self.index("@%d,%d" % (event.x, event.y))
+            if index != self._active:
+                self._swap_tabs(self._active, index)
+                self._active = index
+
+    def _swap_tabs(self, i, j):
+        tab_i = self.tab(i, "text")
+        tab_j = self.tab(j, "text")
+        self.tab(i, text=tab_j)
+        self.tab(j, text=tab_i)
+
+        # Swap the content of the tabs as well
+        frame_i = self.nametowidget(self.tabs()[i])
+        frame_j = self.nametowidget(self.tabs()[j])
+        frame_i.pack_forget()
+        frame_j.pack_forget()
+        self.insert(i, frame_j)
+        self.insert(j, frame_i)
+
+class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Editable Treeview Example")
-
-        self.tree = ttk.Treeview(root, columns=("name", "age", "email"), show='headings')
-        self.tree.heading("name", text="Name")
-        self.tree.heading("age", text="Age")
-        self.tree.heading("email", text="Email")
-
-        # Insert sample data
-        data = [("John Doe", "28", "john@example.com"),
-                ("Jane Smith", "34", "jane@example.com"),
-                ("Mike Brown", "45", "mike@example.com")]
         
-        for item in data:
-            self.tree.insert("", tk.END, values=item)
-
-        self.tree.pack(expand=True, fill='both')
-
-        # Bind the double-click event to start editing
-        self.tree.bind('<Double-1>', self.on_double_click)
-
-        self.entry = None
-
-    def on_double_click(self, event):
-        # Identify the region, column and row clicked
-        region = self.tree.identify('region', event.x, event.y)
-        if region != 'cell':
-            return
-
-        column = self.tree.identify_column(event.x)
-        row = self.tree.identify_row(event.y)
-        row_id = self.tree.identify_row(event.y)
-
-        # Get the current value of the cell
-        item = self.tree.item(row_id)
-        col = int(column[1:]) - 1  # Get column index, -1 because columns start from #1
-        value = item['values'][col]
-
-        # Create an entry widget at the cell position
-        if self.entry:
-            self.entry.destroy()
-        self.entry = ttk.Entry(self.root)
-        self.entry.insert(0, value)
-        self.entry.select_range(0, tk.END)
-        self.entry.focus()
+        # Create a DraggableNotebook widget
+        self.notebook = DraggableNotebook(root)
+        self.notebook.pack(expand=True, fill='both')
         
-        bbox = self.tree.bbox(row_id, column)
-        if bbox:
-            self.entry.place(x=bbox[0], y=bbox[1], width=bbox[2], height=bbox[3])
+        # Create frames for each tab
+        self.tab1 = ttk.Frame(self.notebook)
+        self.tab2 = ttk.Frame(self.notebook)
+        self.tab3 = ttk.Frame(self.notebook)
+        
+        # Add frames to the notebook
+        self.notebook.add(self.tab1, text='Tab 1')
+        self.notebook.add(self.tab2, text='Tab 2')
+        self.notebook.add(self.tab3, text='Tab 3')
+        
+        # Add some content to each tab
+        ttk.Label(self.tab1, text="Content of Tab 1").pack(padx=20, pady=20)
+        ttk.Label(self.tab2, text="Content of Tab 2").pack(padx=20, pady=20)
+        ttk.Label(self.tab3, text="Content of Tab 3").pack(padx=20, pady=20)
+        
+        # Bind the NotebookTabChanged event to the on_tab_changed method
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
+        
+    def on_tab_changed(self, event):
+        selected_tab = event.widget.index(event.widget.select())
+        print(f"Selected tab: {selected_tab}")
 
-        # Bind entry widget to update the cell value
-        self.entry.bind('<Return>', lambda e: self.update_cell_value(row_id, column, col))
-        self.entry.bind('<FocusOut>', lambda e: self.update_cell_value(row_id, column, col))
+# Create the main window
+root = tk.Tk()
+root.geometry("400x300")
 
-    def update_cell_value(self, row_id, column, col):
-        new_value = self.entry.get()
-        self.tree.set(row_id, column, new_value)
-        self.entry.destroy()
-        self.entry = None
+app = App(root)
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = EditableTreeviewApp(root)
-    root.mainloop()
+root.mainloop()

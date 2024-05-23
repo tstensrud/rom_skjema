@@ -1,6 +1,7 @@
-from rooms import Room
+from rooms import Room, get_room_sql_data_to_json
 import tkinter as tk
-import db_operations as db_operations
+import db_operations as db
+import json
 from tkinter import ttk, messagebox, font
 
 class MainWindow:
@@ -9,19 +10,42 @@ class MainWindow:
         self.root = tk.Tk()
         self.root.title("Romskjema")
         self.root.geometry("2300x1200")
+        self.tabs = ttk.Notebook(self.root)
         self.top_frame = tk.Frame(self.root, height=50)
         self.top_frame.pack(fill="x", side="top")
-        self.main_frame = tk.Frame(self.root)
-        self.main_frame.pack(side="top", fill="both", expand=True)   
-        self.top_frame.pack_propagate(False)   
+        self.top_frame.pack_propagate(False)
 
+        self.summary_frame = tk.Frame(self.tabs)
+        self.summary_frame.pack(side="top", fill="both", expand=True)
+        
+        # summary tab, always loads
+        self.tabs.add(self.summary_frame, text="Oppsummering")
+
+        # this is used to keep track of what tab is currently shown
+        # 0 is always summary tab
+        # Buildings start from 1
+        self.active_tab = 0
+
+        # used to keep track of each building table in order to know which one to update
+        self.building_tables = []
+
+        # load buildings, sort them and create a tab for each
+        self.buildings = db.get_buildings()
+        self.buildings.sort()
+        self.generate_tabs()
+
+        self.main_frame = tk.Frame(self.tabs)
+        self.main_frame.pack(side="top", fill="both", expand=True)           
+        self.tabs.add(self.main_frame, text="Bygg A test")
+        self.tabs.pack(side="top", fill="both", expand=True)
+        
         # TOP FRAME SETUP
         self.update_top_frame_summary()
 
         # TABLE FOR MAIN FRAME
-        self.columns=("", "bygg", "etasje", "romnr", "romnavn", "areal", "antall_pers", "m3_per_pers", 
+        self.columns=["", "bygg", "etasje", "romnr", "romnavn", "areal", "antall_pers", "m3_per_pers", 
                       "summert_pers", "emisjon", "sum_emisjon", "prosess", "dimensjonert", 
-                      "tilluft", "avtrekk", "valgt", "gjenvinner", "ventilasjon", "styring", "system")
+                      "tilluft", "avtrekk", "valgt", "gjenvinner", "ventilasjon", "styring", "system"]
         self.room_table = ttk.Treeview(self.main_frame, columns=self.columns, show="headings")
         self.room_table_style = ttk.Style()
         self.room_table_style.configure("Treeview.Heading", font=("Arial", 9, "bold"))
@@ -52,22 +76,77 @@ class MainWindow:
         self.menu_bar_summary.add_command(label="Systemer")
         self.menu_bar.add_cascade(label="Oppsummering", menu=self.menu_bar_summary)
 
+        # TABLE POP UP MENU
+        self.menu_table = tk.Menu(self.root, tearoff=0)
+        self.menu_table.add_command(label="Slett", command=self.remove_room)
+        self.menu_table.add_command(label="Rombeskrivelse", command=self.room_description)
+
         # STARTUP
-        self.update_room_list("floor")
+        self.update_room_list(None)
         self.column_summaries()
         self.cell_entry = None # variable used for editing single cells in table
 
         # KEYBOARD SHORTCUTS AND KEYBINDS
         self.room_table.bind("<Button-1>", self.column_header_methods)
         self.room_table.bind("<Double-1>", self.edit_cell)
+        self.room_table.bind("<Button-3>", self.right_click_on_table)
         self.root.bind("<Control-n>", lambda event: self.new_room_popup())
         self.root.bind("<Control-d>", lambda event: self.remove_room())
+        self.tabs.bind("<<NotebookTabChanged>>", self.get_tab_id_on_click)
+        
         self.root.configure(menu=self.menu_bar)
         self.root.mainloop()
 
+    # Generate one tab for each unique building found in database
+    def generate_tabs(self):
+        # define table headers
+        columns=["", "bygg", "etasje", "romnr", "romnavn", "areal", "antall_pers", "m3_per_pers", 
+                "summert_pers", "emisjon", "sum_emisjon", "prosess", "dimensjonert", 
+                "tilluft", "avtrekk", "valgt", "gjenvinner", "ventilasjon", "styring", "system"]
+                        
+        for i in range(len(self.buildings)):
+            # create frame, treeview
+            frame = tk.Frame(self.tabs)
+            frame.pack(side="top", fill="both", expand=True)
+            table = ttk.Treeview(frame, columns=columns, show="headings")
+                       
+            # style table
+            table_style = ttk.Style()
+            table_style.configure("Treeview.Heading", font=("Arial", 9, "bold"))
+
+            # reformat headers
+            for column in columns:
+                table.heading(column, text=column.capitalize().replace("_", " "))
+
+            # add scrollbar
+            table.pack(side="left", fill="both", expand=True)
+            scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=table.yview)
+            table.configure(yscroll=scrollbar.set)
+            scrollbar.pack(side="right", fill="y")
+
+            # add headers
+            for j in range (len(columns)):
+                if j == 0:
+                    table.column(columns[j], width=0)
+                header_text = table.heading(columns[j], 'text')
+                width = font.Font().measure(header_text)
+                table.column(columns[j], width=width+50)
+            
+            # add table to list of building tables
+            self.building_tables.append(table)
+            
+            # add tab
+            self.tabs.add(frame, text=f"Bygg {self.buildings[i]}")
+               
+    # Get ID of tab that is clicked
+    def get_tab_id_on_click(self, event):
+        selected_tab = event.widget.index(event.widget.select())
+        self.active_tab = selected_tab
+        print(self.active_tab)
+    
     # SUMMARY OF SYSTEMS DATA. UPDATES ON ADDING AND REMOVING ROOMS
     def update_top_frame_summary(self):
-        systems = db_operations.get_ventilation_systems()
+        systems = db.get_ventilation_systems()
         systems.sort()
         # clear all widgest
         for widget in self.top_frame.winfo_children():
@@ -75,7 +154,7 @@ class MainWindow:
         # draw updated list of widgets
         for i in range(len(systems)):
             label_system = tk.Label(self.top_frame, text=f"{systems[i]}")
-            label_volume = tk.Label(self.top_frame, text=f"{db_operations.get_total_air_volume_system(systems[i])} m3/h")
+            label_volume = tk.Label(self.top_frame, text=f"{db.get_total_air_volume_system(systems[i])} m3/h")
             label_system.grid(column=i, row=0, padx=10, pady=5)
             label_volume.grid(column=i, row=1, padx=10, pady=2)
     
@@ -100,7 +179,7 @@ class MainWindow:
         
         # combobox with room types
         rooms: str = []
-        for room in db_operations.load_room_types("skok"):
+        for room in db.load_room_types("skok"):
             rooms.append(room)
         self.new_room_combobox = ttk.Combobox(self.new_room_window_frame, values=rooms)
         self.new_room_combobox.set("Romtype")
@@ -144,7 +223,15 @@ class MainWindow:
         self.new_room_button = tk.Button(self.new_room_window_frame, text="Legg til", command=self.add_new_room)
         self.new_room_button.grid(column=0, row=self.last_row, padx=5, pady=5)
 
-    # MAKE EACH CELL EDITABLE
+    # RIGHT-CLICK LISTENER ON TABLE. OPENS POP-UP MENU
+    def right_click_on_table(self, event):
+        region = self.room_table.identify("region", event.x, event.y)
+        if region != "cell":
+            return
+        self.saved_event = event
+        self.menu_table.post(event.x_root, event.y_root)
+
+    # MAKE EDITABLE CELLS
     def edit_cell(self, event):
         region = self.room_table.identify("region", event.x, event.y)
         if region != "cell":
@@ -153,7 +240,6 @@ class MainWindow:
         column = self.room_table.identify_column(event.x)
         row_id = self.room_table.identify_row(event.y)
         last_row = self.room_table.get_children()
-        print(row_id)
         locked_columns={"#1", "#8", "#9", "#10", "#11", "#13", "#16", "#17", "#18", "#19"}
         if column in locked_columns:
             return
@@ -177,14 +263,39 @@ class MainWindow:
         self.cell_entry.bind('<Return>', lambda e: self.update_cell_value(row_id, column, row_identifier, value))
         self.cell_entry.bind('<FocusOut>', lambda e: self.update_cell_value(row_id, column, row_identifier, value))
     
+    # ROOM DESCRIPTION FROM RIGHT CLICK MENU
+    def room_description(self):
+        event = self.saved_event
+        region = self.room_table.identify("region", event.x, event.y)
+        if region != "cell":
+            return
+        row = self.room_table.identify_row(event.y)
+        row_values = self.room_table.item(row, "values")
+        room_id = row_values[0]
+        room_data = get_room_sql_data_to_json(room_id)
+        room_data_deserialized = json.loads(room_data)
+        items = room_data_deserialized[0]
+        description_window = tk.Toplevel(self.root)
+        description_window.title("Beskrivelse")
+        description_window.geometry("400x900")
+
+        for i, (key, value) in enumerate(items.items(), start=1):
+            label_key = tk.Label(description_window, text=f"{key}:")
+            label_value = tk.Label(description_window, text=f" {value}")
+            label_key.grid(column=0, row=i, padx=5, pady=3, sticky="w")
+            label_value.grid(column=1, row=i, padx=5, pady=3, sticky="w")
+    
     # CHANGE DATABASE ACCORDING TO NEW CELL VALUE
     def update_cell_value(self, row_id, column, row_identifier, old_value) -> None:
         new_value = self.cell_entry.get()
+
+        # if the cell is doubleclicked, but cancelled without chaning the value
         if new_value == old_value:
             self.cell_entry.destroy()
             self.cell_entry = None
             return
-        if db_operations.update_db_table_value(row_identifier, column, new_value):
+        
+        if db.update_db_table_value(row_identifier, column, new_value):
             self.room_table.set(row_id, column, new_value)
             self.cell_entry.destroy()
             self.cell_entry = None
@@ -196,28 +307,28 @@ class MainWindow:
     # ADD NEW ROOM AND CALL METHODS FOR SQL-ENTRY
     def add_new_room(self) -> None:
         multiple = self.new_room_check_state.get()
-        building: str = self.new_room_building_entry.get()
-        room_type: str = self.new_room_combobox.get()
-        floor: str = self.new_room_floor_entry.get()
-        room_number: str = self.new_room_roomnr_entry.get()
-        if db_operations.check_if_room_number_exists(room_number):
-            messagebox.showerror(title="Feil", message="Romnummer finnes allerede")
+        building: str = self.new_room_building_entry.get().strip()
+        room_type: str = self.new_room_combobox.get().strip()
+        floor: str = self.new_room_floor_entry.get().strip()
+        room_number: str = self.new_room_roomnr_entry.get().strip()
+        if db.check_if_room_number_exists(room_number, building):
+            messagebox.showerror(title="Feil", message=f"Romnummer finnes allerede for bygg {building}")
             return
-        name: str = self.new_room_roomname_entry.get()
+        name: str = self.new_room_roomname_entry.get().strip()
         
         try:
-            population: int = int(self.new_room_people_entry.get())
+            population: int = int(self.new_room_people_entry.get().strip())
         except ValueError:
             messagebox.showerror(title="Feil", message="Kun tall i antall personer")
             return
         
         try:
-            area: float = float(self.new_room_area_entry.get())
+            area: float = float(self.new_room_area_entry.get().strip())
         except ValueError:
             messagebox.showerror(title="Feil", message="Kun tall i areal")
             return
         
-        system: str = self.new_room_system_entry.get()
+        system: str = self.new_room_system_entry.get().strip()
         
         if room_type == "Romtype":
             messagebox.showerror(title="Feil", message="Velg romtype")
@@ -237,12 +348,12 @@ class MainWindow:
             self.new_room_area_entry.delete(0, tk.END)
 
     # LOAD ALL ROOMS FROM DATABASE
-    # ARGUMENT IS FOR WHAT IT SHOULD BE SORTED AS
+    # Pass "order" argument for sorting other than by floor
     def update_room_list(self, order) -> None:
         # clear table
         for item in self.room_table.get_children():
             self.room_table.delete(item)
-        rooms = db_operations.get_all_rooms(order)
+        rooms = db.get_all_rooms(order)
         
         # insert updated table values
         for room in rooms:
@@ -253,7 +364,7 @@ class MainWindow:
     # SUMMARIZES THE COLUMNS THAT NEED TO BE SUMMARIZED
     # ADDED TO BOTTOM OF TABLE
     def column_summaries(self) -> tuple:
-        column_sums = db_operations.get_sum_of_column(["area", "air_demand", "air_supply", "air_extract"])
+        column_sums = db.get_sum_of_column(["area", "air_demand", "air_supply", "air_extract"])
         column_tuple = ("Sum", "","", "", "",f"{column_sums[0]} m2", "", "", "", "", "", "", f"{column_sums[1]} m3/h", 
                         f"{column_sums[2]} m3/h", f"{column_sums[3]} m3/h", "", "", "", "", "", "")
         return column_tuple
@@ -264,7 +375,7 @@ class MainWindow:
             for selected_item in self.room_table.selection():
                 row_values = self.room_table.item(selected_item, 'values')
                 room_number = row_values[3]
-                db_operations.delete_room(room_number)
+                db.delete_room(room_number)
                 self.room_table.delete(selected_item)
                 self.update_top_frame_summary()
                 self.update_room_list(None)

@@ -1,7 +1,20 @@
 import json
 import os
-from db_operations import new_room
+from db_operations import new_room, get_room
 
+# Queries the database and returns all values for a room in json-format
+def get_room_sql_data_to_json(room_id):
+    data = get_room(room_id)
+    columns = [
+        "id", "Bygg", "Romtype", "Etasje", "Romnr", "Romnavn", "Areal", "Antall personer",
+        "Luft per person", "Sum personbelastning",
+        "Emissjon per m2", "Emissjon sum", "Prosess", "Minimum per m2", "Dimensjonert", "Tilluft",
+        "Avtrekk", "Valgt per m2", "Ventilasjonsprinsipp", "Varmeveksler", "Styring", "Notater",
+        "Lyd teknisk", "Lyd naborom", "Lyd korridor", "System", "Tilleggsinfo"
+    ]
+    return_list = [dict(zip(columns, row)) for row in data]
+    json_data = json.dumps(return_list, indent=4)
+    return json_data
 
 '''
 Room-class used when creating new room.
