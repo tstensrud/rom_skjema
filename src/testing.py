@@ -1,81 +1,53 @@
-import tkinter as tk
-from tkinter import ttk
+from PyQt6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QMainWindow, QWidget
+from PyQt6.QtCore import Qt
+import sys
 
-class DraggableNotebook(ttk.Notebook):
-    def __init__(self, master=None, **kw):
-        super().__init__(master, **kw)
-        self._active = None
-        self.bind('<ButtonPress-1>', self.on_press, True)
-        self.bind('<ButtonRelease-1>', self.on_release)
-        self.bind('<B1-Motion>', self.on_motion)
+class RoomTable(QTableWidget):
+    def __init__(self, building, rows=5, columns=3, locked_columns=None):
+        super().__init__(rows, columns)
+        self.building = building
+        self.setHorizontalHeaderLabels(['Column 1', 'Column 2', 'Column 3'])
+        self.locked_columns = locked_columns if locked_columns is not None else []
 
-    def on_press(self, event):
-        element = self.identify(event.x, event.y)
-        if "label" in element:
-            index = self.index("@%d,%d" % (event.x, event.y))
-            self._active = index
+        for row in range(rows):
+            for column in range(columns):
+                item = QTableWidgetItem(f'{building} Cell {row+1},{column+1}')
+                self.setItem(row, column, item)
 
-    def on_release(self, event):
-        self._active = None
+    def mouseDoubleClickEvent(self, event):
+        index = self.indexAt(event.pos())
+        if index.isValid() and index.column() in self.locked_columns:
+            return  # Ignore the event if the column is locked
+        super().mouseDoubleClickEvent(event)  # Call the base class implementation for other columns
 
-    def on_motion(self, event):
-        if self._active is None:
-            return
-        element = self.identify(event.x, event.y)
-        if "label" in element:
-            index = self.index("@%d,%d" % (event.x, event.y))
-            if index != self._active:
-                self._swap_tabs(self._active, index)
-                self._active = index
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Room Manager")
+        self.resize(800, 600)
 
-    def _swap_tabs(self, i, j):
-        tab_i = self.tab(i, "text")
-        tab_j = self.tab(j, "text")
-        self.tab(i, text=tab_j)
-        self.tab(j, text=tab_i)
+        self.tables = []
 
-        # Swap the content of the tabs as well
-        frame_i = self.nametowidget(self.tabs()[i])
-        frame_j = self.nametowidget(self.tabs()[j])
-        frame_i.pack_forget()
-        frame_j.pack_forget()
-        self.insert(i, frame_j)
-        self.insert(j, frame_i)
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
 
-class App:
-    def __init__(self, root):
-        self.root = root
-        
-        # Create a DraggableNotebook widget
-        self.notebook = DraggableNotebook(root)
-        self.notebook.pack(expand=True, fill='both')
-        
-        # Create frames for each tab
-        self.tab1 = ttk.Frame(self.notebook)
-        self.tab2 = ttk.Frame(self.notebook)
-        self.tab3 = ttk.Frame(self.notebook)
-        
-        # Add frames to the notebook
-        self.notebook.add(self.tab1, text='Tab 1')
-        self.notebook.add(self.tab2, text='Tab 2')
-        self.notebook.add(self.tab3, text='Tab 3')
-        
-        # Add some content to each tab
-        ttk.Label(self.tab1, text="Content of Tab 1").pack(padx=20, pady=20)
-        ttk.Label(self.tab2, text="Content of Tab 2").pack(padx=20, pady=20)
-        ttk.Label(self.tab3, text="Content of Tab 3").pack(padx=20, pady=20)
-        
-        # Bind the NotebookTabChanged event to the on_tab_changed method
-        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
-        
-    def on_tab_changed(self, event):
-        selected_tab = event.widget.index(event.widget.select())
-        print(f"Selected tab: {selected_tab}")
+        self.layout = QVBoxLayout(self.central_widget)
 
-# Create the main window
-root = tk.Tk()
-root.geometry("400x300")
+        self.generate_tab()
 
-app = App(root)
+    def generate_tab(self) -> None:
+        buildings = self.get_buildings()
+        for i in range(len(buildings)):
+            table = RoomTable(buildings[i], locked_columns=[0, 2])  # Lock columns 0 and 2
+            self.tables.append(table)
+            self.layout.addWidget(table)
 
-root.mainloop()
+    def get_buildings(self):
+        # Replace with the actual logic to get buildings from the database
+        return ["Building A", "Building B", "Building C"]
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())

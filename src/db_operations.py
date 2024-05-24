@@ -7,6 +7,11 @@ from contextlib import contextmanager
 
 DB_PATH = "./db/rooms.db"
 
+# Error message
+def error_message(error: str) -> None:
+    messagebox.showerror(title="Error", message=f"Error: {error}")
+
+# Context manager to avoid the connect/close code in every method
 @contextmanager
 def get_cursor():
     connect = sqlite3.connect(DB_PATH)
@@ -57,8 +62,8 @@ def create_room_table():
     connect.commit()
     connect.close()
 
-# ADD NEW ROOM TO TABLE
-def new_room(bygg: str, room_type: str, floor: str, roomnr: str, roomname: str, area: float, pop: int, air_pp: float, 
+# Add new room to database
+def add_new_room_to_db(bygg: str, room_type: str, floor: str, roomnr: str, roomname: str, area: float, pop: int, air_pp: float, 
              air_per_person_sum: float, air_emission: float, air_emission_sum: float, air_process: float, 
              air_min: float, air_demand: float, air_supply: float, air_extract: float, air_chosen: float,
              ventilation_principle: str, heat_exchange: str, room_control: str, notes: str, 
@@ -97,7 +102,7 @@ def new_room(bygg: str, room_type: str, floor: str, roomnr: str, roomname: str, 
                                 air_process, air_min, air_demand, air_supply, air_extract, air_chosen, ventilation_principle,
                                 heat_exchange, room_control, notes, db_teknisk, db_rw_nabo, db_rw_korr, system, aditional))
 
-# FIND AND RETURN TRUE IF ROOM-NUMBER IN BUILDING ALREADY EXISTS.
+# Checks if room number in a building allready exists. No two rooms should have the same room number
 def check_if_room_number_exists(room_number: str, building: str) -> bool:
     with get_cursor() as cursor:
         cursor.execute("SELECT * FROM rooms WHERE bygg = ? AND roomnr=?", (building, room_number,))
@@ -107,15 +112,14 @@ def check_if_room_number_exists(room_number: str, building: str) -> bool:
         else:
             return False
 
-# RETURN ALL DATA FOR A SPECIFIC ROOM
+# Returns all data stored for a specific room
 def get_room(room_number: str):
     with get_cursor() as cursor:
         cursor.execute("SELECT * FROM rooms WHERE id = ?", (room_number,))
         result = cursor.fetchall()
         return result
 
-# RETURN ROOM DATA FROM SPECIFIC ROOM FOR TABLE ON MAIN WINDOW.
-# USED WHEN ADDING NEW ROOM
+# Returns data for a specific room. Only columns used in the main window tables are returned
 def get_room_table_data(room_number: str):
     with get_cursor() as cursor:
         result = ()
@@ -129,42 +133,32 @@ def get_room_table_data(room_number: str):
         result = cursor.fetchone()
         return add_units_to_room_data(result, True)
     
-# DELETE ROOM FROM TABLE
+# Delete room from table
 def delete_room(room_number: str) -> None:
     with get_cursor() as cursor:    
         cursor.execute("""DELETE FROM rooms WHERE roomnr=?""",(room_number,))
         print(f"Room {room_number} deleted")
 
-# GET ALL DATA FROM ROOMS TO PLACE ON TABLE IN MAIN WINDOW
-# ARGUMENT IS FOR WHAT LIST SHOULD BE SORTED BY
-def get_all_rooms(order: str):
+# Get all data from rooms that are to be shown in the table on the main window
+def get_all_rooms(building: str):
     with get_cursor() as cursor:
         rows = []
-        if order is not None:
-            query = f"""
-                SELECT id, bygg, floor, roomnr, roomname, area, room_population, air_per_person, 
-                air_person_sum, air_emission, air_emission_sum, air_process, air_demand,
-                air_supply, air_extract, air_chosen, heat_exchange, ventilation_principle,
-                room_control, system 
-                FROM rooms 
-                ORDER BY bygg ASC, floor ASC, {order} ASC
-                """
-        else:
-            query = f"""
-                SELECT id, bygg, floor, roomnr, roomname, area, room_population, air_per_person, 
-                air_person_sum, air_emission, air_emission_sum, air_process, air_demand,
-                air_supply, air_extract, air_chosen, heat_exchange, ventilation_principle,
-                room_control, system 
-                FROM rooms 
-                ORDER BY bygg ASC, floor ASC
-                """
-        cursor.execute(query)
+        query = f"""
+            SELECT id, bygg, floor, roomnr, roomname, area, room_population, air_per_person, 
+            air_person_sum, air_emission, air_emission_sum, air_process, air_demand,
+            air_supply, air_extract, air_chosen, heat_exchange, ventilation_principle,
+            room_control, system 
+            FROM rooms
+            WHERE bygg = ?
+            ORDER BY bygg ASC, floor ASC
+            """
+        cursor.execute(query, (building,))
         rows = cursor.fetchall()
         rows_with_unit_data = add_units_to_room_data(rows, False)
         return rows_with_unit_data
 
-# THIS METHOD ADDS UNITS TO THE ROOM-DATA FOR BETTER READABILITY IN THE TABLE
-# E.G. AREA GETS ADDED m2
+# Add units to the tabeldata
+# E.g. area which i stored as 100 in the table will be return with a "m2" behind for better readability
 def add_units_to_room_data(rows, single_room: bool) -> tuple:
     row_list_with_units = []
     if single_room is True:
@@ -198,11 +192,8 @@ def add_units_to_room_data(rows, single_room: bool) -> tuple:
             row_list_with_units.append(tuple(row_list))
         return row_list_with_units
 
-# ERROR MESSAGE FOR DB-QUERIES
-def error_message(error: str) -> None:
-    messagebox.showerror(title="Error", message=f"Error: {error}")
 
-# RETURN SUM OF A COLUMN(s)
+# Return the sum of a column
 def get_sum_of_column(columns) -> float:
     with get_cursor() as cursor:
         column_sums = []
@@ -213,8 +204,8 @@ def get_sum_of_column(columns) -> float:
             column_sums.append(result[0])
         return column_sums
 
-# RETURNS THE TOTAL AIR VOLUME OF GIVEN SYSTEM
-def get_total_air_volume_system(system: str) -> float:
+# Returns the total supply air volumne of a given system
+def get_total_air_supply_volume_system(system: str) -> float:
     with get_cursor() as cursor:
         cursor.execute("SELECT air_supply FROM rooms WHERE system = ?", (system,))
         result = cursor.fetchall()
@@ -224,14 +215,25 @@ def get_total_air_volume_system(system: str) -> float:
             volume += val
         return volume
 
-# GET ALL VENTILATION SYSTEMS
+# Returns the total extract air volumne of a given system
+def get_total_air_extract_volume_system(system: str) -> float:
+    with get_cursor() as cursor:
+        cursor.execute("SELECT air_extract FROM rooms WHERE system = ?", (system,))
+        result = cursor.fetchall()
+        volumes = [volume[0] for volume in result]
+        volume = 0
+        for val in volumes:
+            volume += val
+        return volume
+    
+# Get alle current ventilationsystems
 def get_ventilation_systems():
     with get_cursor() as cursor:
         cursor.execute("SELECT DISTINCT system FROM rooms")
         result = cursor.fetchall()
         return ([system[0] for system in result]) # return list of strings
 
-# LOAD ALL ROOM TYPES IN A SPECIFICTAION FROM JSON FILE
+# Load all room-types from a specification json-file
 def load_room_types(specification: str):
     room_types = []
     json_file_path = os.path.join(os.path.dirname(__file__), "json", f"{specification}.json")
@@ -241,8 +243,8 @@ def load_room_types(specification: str):
         room_types = data.keys()
     return room_types
 
-# CHANGE SPECIFIC TABLE VALUE
-# USED WHEN USER IS UPDATING A CELL MANUALLY
+# Update table value
+# Called when a user changes the value of a cell manually
 def update_db_table_value(room_id: str, column_id: str, new_value) -> bool:
     with get_cursor() as cursor:
         column_name = get_column_name(column_id)
@@ -265,8 +267,7 @@ def update_db_table_value(room_id: str, column_id: str, new_value) -> bool:
     
     return True
 
-# RECALCULATE VALUES IF AREA CHANGES
-# EMISSION_SUM-VALUE AND DEMAND-VALUE IS RECALCULATED
+# Recalculate necessary values if area is changed
 def recalculate_based_on_area(room_id) -> None:
     with get_cursor() as cursor:
         query = """SELECT area, air_emission, air_emission_sum, air_demand FROM rooms WHERE id=?"""
@@ -280,8 +281,7 @@ def recalculate_based_on_area(room_id) -> None:
         cursor.execute(update, (new_emission_sum, new_air_demand, room_id))
     recalculate_air_demand(room_id)
 
-# RECALCULATE VALUES IF POPULATION CHANGES
-# POPULATION_SUM-VALUE AND DEMAND-VALUE IS RECALCULATED
+# Recalculate necessary values if room population is changed
 def recalculate_based_on_population(room_id):
     with get_cursor() as cursor:
         query = """SELECT room_population, air_per_person, air_person_sum, air_demand FROM rooms WHERE id=?"""
@@ -295,8 +295,7 @@ def recalculate_based_on_population(room_id):
         cursor.execute(update, (new_person_sum, new_air_demand, room_id))
     recalculate_air_demand(room_id)
 
-# RECALCULATE VALUES IF PROCESS CHANGES
-# DEMAND-VALUE IS RECALCULATED
+# Recalculate necessary values if process value is changed
 def recalculate_air_demand(room_id):
     with get_cursor() as cursor:
         query = """SELECT  air_person_sum, air_emission_sum, air_process FROM rooms WHERE id=?"""
@@ -308,8 +307,7 @@ def recalculate_air_demand(room_id):
         update = "UPDATE rooms SET air_demand = ? WHERE id = ?"
         cursor.execute(update, (new_air_demand, room_id))
 
-# RECALCULATE VALUES IF SUPPLY CHANGES
-# AIR CHOSEN IS RECALCULATED (m3/m2)
+# Recalculate necessary values if supply air is changed
 def recalculate_based_on_supply(room_id):
     with get_cursor() as cursor:
         query = """SELECT  area, air_supply FROM rooms WHERE id=?"""
@@ -321,26 +319,25 @@ def recalculate_based_on_supply(room_id):
         update = "UPDATE rooms SET air_chosen = ? WHERE id = ?"
         cursor.execute(update, (new_air_chosen, room_id))
 
-# RETURN COLUMN NAME BASED ON COLUMN_ID FROM TREEVIEW
-# ONLY VALUES THAT SHOULD CHANGE ARE IN HERE.
+# Return the database column bame based on givne column index
 def get_column_name(column_id) -> str:
     column_map = {
-        "#2": "bygg",
-        "#3": "floor",
-        "#4": "roomnr",
-        "#5": "roomname",
-        "#6": "area",
-        "#7": "room_population",
-        "#8": "air_per_person",
-        "#9": "air_emission",
-        "#12": "air_process",
-        "#14": "air_supply",
-        "#15": "air_extract",
-        "#20": "system"
+        "1": "bygg",
+        "2": "floor",
+        "3": "roomnr",
+        "4": "roomname",
+        "5": "area",
+        "6": "room_population",
+        "7": "air_per_person",
+        "8": "air_emission",
+        "11": "air_process",
+        "13": "air_supply",
+        "14": "air_extract",
+        "19": "system"
     }
     return column_map.get(column_id)
 
-# RETURN LIST OF BUILDINGS
+# Returns list of buildings
 def get_buildings():
     with get_cursor() as cursor:
         cursor.execute("SELECT DISTINCT bygg FROM rooms")

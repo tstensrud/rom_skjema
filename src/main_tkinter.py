@@ -1,4 +1,4 @@
-from rooms import Room, get_room_sql_data_to_json
+from rooms import get_room_sql_data_to_json, create_new_room
 import tkinter as tk
 import db_operations as db
 import json
@@ -154,7 +154,7 @@ class MainWindow:
         # draw updated list of widgets
         for i in range(len(systems)):
             label_system = tk.Label(self.top_frame, text=f"{systems[i]}")
-            label_volume = tk.Label(self.top_frame, text=f"{db.get_total_air_volume_system(systems[i])} m3/h")
+            label_volume = tk.Label(self.top_frame, text=f"{db.get_total_air_supply_volume_system(systems[i])} m3/h")
             label_system.grid(column=i, row=0, padx=10, pady=5)
             label_volume.grid(column=i, row=1, padx=10, pady=2)
     
@@ -333,7 +333,7 @@ class MainWindow:
         if room_type == "Romtype":
             messagebox.showerror(title="Feil", message="Velg romtype")
             return
-        Room("skok", building, room_type, floor, room_number, name, population, area, system)
+        create_new_room("skok", building, room_type, floor, room_number, name, population, area, system)
         self.update_room_list(None)
         
 
