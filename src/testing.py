@@ -1,53 +1,49 @@
-from PyQt6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QMainWindow, QWidget
-from PyQt6.QtCore import Qt
 import sys
+from PyQt6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QPushButton
+import sqlite3
 
-class RoomTable(QTableWidget):
-    def __init__(self, building, rows=5, columns=3, locked_columns=None):
-        super().__init__(rows, columns)
-        self.building = building
-        self.setHorizontalHeaderLabels(['Column 1', 'Column 2', 'Column 3'])
-        self.locked_columns = locked_columns if locked_columns is not None else []
-
-        for row in range(rows):
-            for column in range(columns):
-                item = QTableWidgetItem(f'{building} Cell {row+1},{column+1}')
-                self.setItem(row, column, item)
-
-    def mouseDoubleClickEvent(self, event):
-        index = self.indexAt(event.pos())
-        if index.isValid() and index.column() in self.locked_columns:
-            return  # Ignore the event if the column is locked
-        super().mouseDoubleClickEvent(event)  # Call the base class implementation for other columns
-
-class MainWindow(QMainWindow):
+class TableWidgetDemo(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Room Manager")
-        self.resize(800, 600)
+        self.initUI()
+    
+    def initUI(self):
+        self.layout = QVBoxLayout()
+        
+        self.tableWidget = QTableWidget(5, 3)  # 5 rows, 3 columns
+        self.tableWidget.setHorizontalHeaderLabels(["Column 1", "Column 2", "Column 3"])
+        for row in range(5):
+            for column in range(3):
+                self.tableWidget.setItem(row, column, QTableWidgetItem(f"Item {row+1}-{column+1}"))
+        
+        self.layout.addWidget(self.tableWidget)
+        
+        # Add a button to add a new row with data from an SQLite query
+        self.addButton = QPushButton("Add New Row")
+        self.addButton.clicked.connect(self.addNewRow)
+        self.layout.addWidget(self.addButton)
+        
+        self.setLayout(self.layout)
+        self.setWindowTitle("QTableWidget Add Row Example")
+    
+    def new_updated_row(self, row_count, data) -> None:
+        self.tableWidget.insertRow(row_count)
+        for column, value in enumerate(data):
+            self.tableWidget.setItem(row_count, column, QTableWidgetItem(str(value)))
+    
+    def addNewRow(self):
+        # Simulate an SQLite query that returns a tuple of data
+        # For example purposes, let's use a hardcoded tuple
+        data = ("New Item 6-1", "New Item 6-2", "New Item 6-3")
+        
+        # Get the current row count (i.e., the index where the new row will be inserted)
+        row_count = self.tableWidget.rowCount()
+        
+        # Insert the new row with the data
+        self.new_updated_row(row_count, data)
 
-        self.tables = []
-
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-
-        self.layout = QVBoxLayout(self.central_widget)
-
-        self.generate_tab()
-
-    def generate_tab(self) -> None:
-        buildings = self.get_buildings()
-        for i in range(len(buildings)):
-            table = RoomTable(buildings[i], locked_columns=[0, 2])  # Lock columns 0 and 2
-            self.tables.append(table)
-            self.layout.addWidget(table)
-
-    def get_buildings(self):
-        # Replace with the actual logic to get buildings from the database
-        return ["Building A", "Building B", "Building C"]
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
+    demo = TableWidgetDemo()
+    demo.show()
     sys.exit(app.exec())

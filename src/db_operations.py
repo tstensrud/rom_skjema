@@ -1,4 +1,4 @@
-from tkinter import messagebox
+from PyQt6.QtWidgets import QMessageBox
 import os
 import json
 from prettytable import PrettyTable # for testing purposes
@@ -9,7 +9,7 @@ DB_PATH = "./db/rooms.db"
 
 # Error message
 def error_message(error: str) -> None:
-    messagebox.showerror(title="Error", message=f"Error: {error}")
+    QMessageBox.critical(None, "Error", f"SQLite error: {error}")
 
 # Context manager to avoid the connect/close code in every method
 @contextmanager
@@ -113,14 +113,14 @@ def check_if_room_number_exists(room_number: str, building: str) -> bool:
             return False
 
 # Returns all data stored for a specific room
-def get_room(room_number: str):
+def get_all_room_data(room_id: str):
     with get_cursor() as cursor:
-        cursor.execute("SELECT * FROM rooms WHERE id = ?", (room_number,))
+        cursor.execute("SELECT * FROM rooms WHERE id = ?", (room_id,))
         result = cursor.fetchall()
         return result
 
 # Returns data for a specific room. Only columns used in the main window tables are returned
-def get_room_table_data(room_number: str):
+def get_room_table_data(room_id):
     with get_cursor() as cursor:
         result = ()
         cursor.execute("""
@@ -129,15 +129,15 @@ def get_room_table_data(room_number: str):
                     air_supply, air_extract, air_chosen, heat_exchange, ventilation_principle,
                     room_control, system
                     FROM rooms 
-                    WHERE roomnr=?""", (room_number,))
+                    WHERE id=?""", (room_id,))
         result = cursor.fetchone()
         return add_units_to_room_data(result, True)
     
 # Delete room from table
-def delete_room(room_number: str) -> None:
+def delete_room(room_id: str) -> None:
     with get_cursor() as cursor:    
-        cursor.execute("""DELETE FROM rooms WHERE roomnr=?""",(room_number,))
-        print(f"Room {room_number} deleted")
+        cursor.execute("""DELETE FROM rooms WHERE id=?""",(room_id,))
+        print(f"Room {room_id} deleted")
 
 # Get all data from rooms that are to be shown in the table on the main window
 def get_all_rooms(building: str):
@@ -192,7 +192,6 @@ def add_units_to_room_data(rows, single_room: bool) -> tuple:
             row_list_with_units.append(tuple(row_list))
         return row_list_with_units
 
-
 # Return the sum of a column
 def get_sum_of_column(columns) -> float:
     with get_cursor() as cursor:
@@ -203,6 +202,13 @@ def get_sum_of_column(columns) -> float:
             result = cursor.fetchone()
             column_sums.append(result[0])
         return column_sums
+
+# Get alle current ventilationsystems
+def get_ventilation_systems():
+    with get_cursor() as cursor:
+        cursor.execute("SELECT DISTINCT system FROM rooms")
+        result = cursor.fetchall()
+        return ([system[0] for system in result]) # return list of strings
 
 # Returns the total supply air volumne of a given system
 def get_total_air_supply_volume_system(system: str) -> float:
@@ -225,13 +231,6 @@ def get_total_air_extract_volume_system(system: str) -> float:
         for val in volumes:
             volume += val
         return volume
-    
-# Get alle current ventilationsystems
-def get_ventilation_systems():
-    with get_cursor() as cursor:
-        cursor.execute("SELECT DISTINCT system FROM rooms")
-        result = cursor.fetchall()
-        return ([system[0] for system in result]) # return list of strings
 
 # Load all room-types from a specification json-file
 def load_room_types(specification: str):
@@ -254,60 +253,44 @@ def update_db_table_value(room_id: str, column_id: str, new_value) -> bool:
         cursor.execute(query, (new_value, room_id))
         print(f"Room-ID {room_id} changed column {column_name} to {new_value}")
     
-    # only change in area, room_population, process, supply and extract requires recalculation
-    recalc_set = {"area", "room_population", "air_process", "air_supply"}
-    recalc_dict = {
-        "area": recalculate_based_on_area,
-        "room_population": recalculate_based_on_population,
-        "air_process": recalculate_air_demand,
-        "air_supply": recalculate_based_on_supply
-    }
-    if column_name in recalc_set:    
-        recalc_dict[column_name](room_id)
+    # recalculate all the values based on what value was changed
+    if column_name == "air_supply":
+        recalculate_based_on_supply(room_id)
+    else:
+        recalculate_all_values(room_id)
     
     return True
 
-# Recalculate necessary values if area is changed
-def recalculate_based_on_area(room_id) -> None:
+# Recalculate values when a table-value is updated
+def recalculate_all_values(room_id) -> None:
     with get_cursor() as cursor:
-        query = """SELECT area, air_emission, air_emission_sum, air_demand FROM rooms WHERE id=?"""
-        cursor.execute(query, (room_id,))
-        result = cursor.fetchall()
-        for value in result:
-            area, air_emission, air_emission_sum, air_demand = value
-        new_emission_sum = area * air_emission
-        new_air_demand = int(air_demand - air_emission_sum + new_emission_sum)
-        update = "UPDATE rooms SET air_emission_sum = ?, air_demand = ? WHERE id = ?"
-        cursor.execute(update, (new_emission_sum, new_air_demand, room_id))
-    recalculate_air_demand(room_id)
+        query = """ SELECT 
+                    area, 
+                    room_population, 
+                    air_per_person, 
+                    air_emission, 
+                    air_process
+                    FROM rooms
+                    WHERE id = ?
+                    """
+        cursor.execute(query,(room_id,))
+        result = cursor.fetchone()
+        if result is None:
+            error_message("No values could be retrieved")
+            return
+        # Place result in variables
+        area, room_population, air_per_person, air_emission, air_process = result
+        
+        # Recalculate values
+        new_sum_air_pp = float(room_population * air_per_person)
+        new_emission_sum = float(air_emission * area)
+        new_air_demand = float(new_sum_air_pp + new_emission_sum + air_process)
+        
+        # Update database
+        query_update = "UPDATE rooms SET air_person_sum = ?, air_emission_sum = ?, air_demand = ? WHERE id = ?"
+        cursor.execute(query_update, (new_sum_air_pp, new_emission_sum, new_air_demand, room_id))
 
-# Recalculate necessary values if room population is changed
-def recalculate_based_on_population(room_id):
-    with get_cursor() as cursor:
-        query = """SELECT room_population, air_per_person, air_person_sum, air_demand FROM rooms WHERE id=?"""
-        cursor.execute(query, (room_id,))
-        result = cursor.fetchall()
-        for value in result:
-            room_population, air_per_person, air_person_sum, air_demand = value
-        new_person_sum = room_population * air_per_person
-        new_air_demand = int(air_demand - air_person_sum + new_person_sum)
-        update = "UPDATE rooms SET air_person_sum = ?, air_demand = ? WHERE id = ?"
-        cursor.execute(update, (new_person_sum, new_air_demand, room_id))
-    recalculate_air_demand(room_id)
-
-# Recalculate necessary values if process value is changed
-def recalculate_air_demand(room_id):
-    with get_cursor() as cursor:
-        query = """SELECT  air_person_sum, air_emission_sum, air_process FROM rooms WHERE id=?"""
-        cursor.execute(query, (room_id,))
-        result = cursor.fetchall()
-        for value in result:
-            air_person_sum, air_emission_sum, air_process = value
-        new_air_demand = int(air_person_sum + air_emission_sum + air_process)
-        update = "UPDATE rooms SET air_demand = ? WHERE id = ?"
-        cursor.execute(update, (new_air_demand, room_id))
-
-# Recalculate necessary values if supply air is changed
+# Recalculate air_chosen m3/m2 when air_supply is changed
 def recalculate_based_on_supply(room_id):
     with get_cursor() as cursor:
         query = """SELECT  area, air_supply FROM rooms WHERE id=?"""
@@ -315,7 +298,7 @@ def recalculate_based_on_supply(room_id):
         result = cursor.fetchall()
         for value in result:
             area, air_supply = value
-        new_air_chosen = int(air_supply / area)
+        new_air_chosen = float(air_supply / area)
         update = "UPDATE rooms SET air_chosen = ? WHERE id = ?"
         cursor.execute(update, (new_air_chosen, room_id))
 

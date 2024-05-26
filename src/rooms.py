@@ -2,11 +2,14 @@ import json
 import os
 import random
 import string
-from db_operations import add_new_room_to_db, get_room, load_room_types
+
+from PyQt6.QtWidgets import (QMessageBox)
+
+from db_operations import add_new_room_to_db, get_all_room_data, load_room_types
 
 # Queries the database and returns all values for a room in json-format
 def get_room_sql_data_to_json(room_id):
-    data = get_room(room_id)
+    data = get_all_room_data(room_id)
     columns = [
         "id", "Bygg", "Romtype", "Etasje", "Romnr", "Romnavn", "Areal", "Antall personer",
         "Luft per person", "Sum personbelastning",
@@ -14,9 +17,19 @@ def get_room_sql_data_to_json(room_id):
         "Avtrekk", "Valgt per m2", "Ventilasjonsprinsipp", "Varmeveksler", "Styring", "Notater",
         "Lyd teknisk", "Lyd naborom", "Lyd korridor", "System", "Tilleggsinfo"
     ]
-    return_list = [dict(zip(columns, row)) for row in data]
-    json_data = json.dumps(return_list, indent=4)
-    return json_data
+    try:
+        return_list = [dict(zip(columns, row)) for row in data]
+        json_data = json.dumps(return_list, indent=4)
+        return json_data
+    except TypeError as e:
+        QMessageBox.critical(None, "Feil", f"Kunne ikke laste inn rom-data: {e}")
+    except OverflowError as e:
+        QMessageBox.critical(None, "Feil", f"Kunne ikke laste inn rom-data: {e}")
+    except ValueError as e:
+        QMessageBox.critical(None, "Feil", f"Kunne ikke laste inn rom-data: {e}")
+    except Exception as e:
+        QMessageBox.critical(None, "Feil", f"Kunne ikke laste inn rom-data: {e}")
+
 
 
 # set all data for a new room and call the database-method for generating new room
@@ -31,11 +44,11 @@ def create_new_room(specification, building: str, room_type: str, floor: str, ro
         data = json.load(jfile)
     
     # SET VARIABLES FROM JSON FILE ACCORDING TO CURRENT SPECIFICATION
-    building = building
-    room_type = room_type
-    floor = floor
-    room_number = room_number
-    room_name = room_name
+    building: str = building
+    room_type: str = room_type
+    floor: str = floor
+    room_number: str = room_number
+    room_name: str = room_name
     area: float = area
     room_population: int = population
     air_per_person: float = data[f'{room_type}']['luftmengder']['m3_per_person']
