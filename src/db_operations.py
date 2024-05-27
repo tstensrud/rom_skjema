@@ -1,8 +1,8 @@
-from PyQt6.QtWidgets import QMessageBox
 import os
 import json
-from prettytable import PrettyTable # for testing purposes
 import sqlite3
+from PyQt6.QtWidgets import QMessageBox
+from prettytable import PrettyTable # for testing purposes
 from contextlib import contextmanager
 
 DB_PATH = "./db/rooms.db"

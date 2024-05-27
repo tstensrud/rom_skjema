@@ -5,6 +5,7 @@ from PyQt6.QtGui import QAction
 
 from rooms import get_room_sql_data_to_json
 from db_operations import *
+from summary import summary_objects
 
 class RoomTable(QTableWidget):
     def __init__ (self, building):
@@ -88,6 +89,9 @@ class RoomTable(QTableWidget):
         self.insertRow(row_index)
         for column, data in enumerate(updated_row):
             self.setItem(row_index, column, QTableWidgetItem(str(data)))
+        
+        # update summary at top of mainwindow
+        #summary_objects[0].intiate_labels()
     
     # Handle the change of value in a cell
     def changed_cell(self, item) -> str:
@@ -137,7 +141,7 @@ class RoomTable(QTableWidget):
         items = room_data_deserialized[0]
         
         summary_window = QWidget()
-        summary_window.setWindowTitle(f"Rom-data for rom {items["Romnr"]}")
+        summary_window.setWindowTitle(f"Rom-data")
         summary_window.setGeometry(150,150,300,200)
         layout = QGridLayout()
 

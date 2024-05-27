@@ -1,6 +1,4 @@
-import tkinter as tk
 import db_operations as db
-import json
 import sys
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QSplitter, QGridLayout, 
@@ -8,11 +6,9 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QSplitter, QGridLayout,
                              QPushButton, QComboBox, QMessageBox, QCheckBox)
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
-from tkinter import messagebox
 
+from summary import Summary, summary_object
 from tables import RoomTable
-from rooms import get_room_sql_data_to_json, create_new_room
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -24,18 +20,16 @@ class MainWindow(QMainWindow):
 
         # Create a QSplitter
         self.splitter = QSplitter(Qt.Orientation.Vertical)
-
+        
         # Create the top widget (20% of the window)
-        self.top_widget = QWidget()
-        self.top_widget_layout = QGridLayout()
-        self.top_widget.setLayout(self.top_widget_layout)
+        self.top_summary = Summary()
+        summary_object.append(self.top_summary)
+        self.top_widget = self.top_summary
+        
         self.splitter.addWidget(self.top_widget)
         self.splitter.setStretchFactor(0, 1)  # 20% weight
 
-        # Initate top widget widgets
-        self.set_top_summary()
-
-        # Create the bottom widget (80% of the window) with QTabWidget
+        # Create the bottom widget (80% of the window)
         self.bottom_widget = QTabWidget()
         self.splitter.addWidget(self.bottom_widget)
         self.splitter.setStretchFactor(1, 4)  # 80% weight
@@ -47,20 +41,14 @@ class MainWindow(QMainWindow):
         # Keep track of open windows
         self.windows = []
 
-
-    # Generate summary for top part of window
-    def set_top_summary(self):
-        systems = db.get_ventilation_systems()
-        systems.sort()
-        for i in range(len(systems)):
-            system_name = QLabel(systems[i])
-            system_airflow_supply = f"Tilluft: {db.get_total_air_supply_volume_system(systems[i])} m3/h"
-            system_airflow_extract = f"Avtrekk: {db.get_total_air_extract_volume_system(systems[i])} m3/h"
-            system_airflow_supply_label = QLabel(system_airflow_supply)
-            system_airflow_extract_label = QLabel(system_airflow_extract)
-            self.top_widget_layout.addWidget(system_name, 0, i)
-            self.top_widget_layout.addWidget(system_airflow_supply_label, 1, i)
-            self.top_widget_layout.addWidget(system_airflow_extract_label, 2, i)
+        # Status bar
+        self.status_bar = self.statusBar()
+        self.status_bar_text = QLabel("Status bar")
+        self.status_bar.addPermanentWidget(self.status_bar_text)
+        '''
+        label.setText() for å endre label
+        statusbar.showMessage("str", tid) for temp melding i statusbar
+        '''
 
     # Generate menu bar
     def set_up_top_menu(self):
@@ -68,13 +56,15 @@ class MainWindow(QMainWindow):
         room_menu = menu.addMenu("Rom")
         new_room = QAction("Nytt rom", self)
         new_room.triggered.connect(self.new_room_popup)
+        new_room.setShortcut("Ctrl+N")
+        new_room.setStatusTip("Legg til nytt rom")
         delete_room = QAction("Fjern rom", self)
-        # delete_room.triggered.connect(self.remove_room)
-
+        delete_room.setShortcut("Ctrl+D")
+        delete_room.setStatusTip("Slet rom")
+        delete_room.triggered.connect(self.delete_room)
         room_menu.addAction(new_room)
         room_menu.addAction(delete_room)
     
-   
     # Generate one tab for each unique building found in database
     def generate_tabs(self) -> None:
         buildings = db.get_buildings()
@@ -90,7 +80,6 @@ class MainWindow(QMainWindow):
     
     # Open window for adding new room
     def new_room_popup(self):
-               
         self.new_room_window = QWidget()
         self.new_room_window.setWindowTitle(f"Legg til nye rom")
         self.new_room_window.setGeometry(150,150,300,200)
@@ -135,7 +124,6 @@ class MainWindow(QMainWindow):
         self.entry_people.setPlaceholderText("Antall personer")
         self.entry_system = QLineEdit()
         self.entry_system.setPlaceholderText("System")
-
         entries = [self.entry_building, self.entry_floor, self.entry_room_number, self.entry_room_name,
                    self.entry_area, self.entry_people, self.entry_system]
 
@@ -185,6 +173,10 @@ class MainWindow(QMainWindow):
         system: str = self.check_entry_field_for_empty_string(self.entry_system, "System")
         multiple = self.several_new_rooms_check.isChecked()
 
+    # Delete room
+    def delete_room(self):
+        pass
+
     # Check if entry fields are empty when creating new room
     # Return content of entry field if not empty
     def check_entry_field_for_empty_string(self, entry_field, field_name) -> str:
@@ -200,5 +192,3 @@ if __name__ == "__main__":
     window.resize(2300, 1200)
     window.show()
     sys.exit(app.exec())
-        
-        
