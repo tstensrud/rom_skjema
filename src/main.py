@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QSplitter, QGridLayout,
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
-from summary import Summary, summary_object
+from summary import Summary, summary_objects
 from tables import RoomTable
 
 class MainWindow(QMainWindow):
@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         
         # Create the top widget (20% of the window)
         self.top_summary = Summary()
-        summary_object.append(self.top_summary)
+        summary_objects.append(self.top_summary)
         self.top_widget = self.top_summary
         
         self.splitter.addWidget(self.top_widget)
