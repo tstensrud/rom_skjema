@@ -67,7 +67,7 @@ def add_new_room_to_db(bygg: str, room_type: str, floor: str, roomnr: str, roomn
              air_per_person_sum: float, air_emission: float, air_emission_sum: float, air_process: float, 
              air_min: float, air_demand: float, air_supply: float, air_extract: float, air_chosen: float,
              ventilation_principle: str, heat_exchange: str, room_control: str, notes: str, 
-             db_teknisk: str, db_rw_nabo: str, db_rw_korr: str, system: str, aditional: str) -> None:   
+             db_teknisk: str, db_rw_nabo: str, db_rw_korr: str, system: str, aditional: str) -> int:   
     with get_cursor() as cursor:
         query = """INSERT INTO rooms (
                     bygg,
@@ -101,7 +101,11 @@ def add_new_room_to_db(bygg: str, room_type: str, floor: str, roomnr: str, roomn
         cursor.execute(query, (bygg, room_type, floor, roomnr, roomname, area, pop, air_pp, air_per_person_sum, air_emission, air_emission_sum,
                                 air_process, air_min, air_demand, air_supply, air_extract, air_chosen, ventilation_principle,
                                 heat_exchange, room_control, notes, db_teknisk, db_rw_nabo, db_rw_korr, system, aditional))
-
+        query = """SELECT id FROM rooms WHERE roomnr = ?"""
+        cursor.execute(query, (roomnr,))
+        result = cursor.fetchone()
+        return result
+    
 # Checks if room number in a building allready exists. No two rooms should have the same room number
 def check_if_room_number_exists(room_number: str, building: str) -> bool:
     with get_cursor() as cursor:
@@ -203,17 +207,26 @@ def get_sum_of_column(columns) -> float:
             column_sums.append(result[0])
         return column_sums
 
-# Get alle current ventilationsystems
-def get_ventilation_systems():
+# Get all current ventilationsystems
+def get_all_ventilation_systems():
     with get_cursor() as cursor:
         cursor.execute("SELECT DISTINCT system FROM rooms")
         result = cursor.fetchall()
         return ([system[0] for system in result]) # return list of strings
 
-# Returns the total supply air volumne of a given system
-def get_total_air_supply_volume_system(system: str) -> float:
+def get_ventilation_system_per_building(building):
     with get_cursor() as cursor:
-        cursor.execute("SELECT air_supply FROM rooms WHERE system = ?", (system,))
+        cursor.execute("SELECT DISTINCT system FROM rooms WHERE bygg = ?", (building,))
+        result = cursor.fetchall()
+        return ([system[0] for system in result])
+
+# Returns the total supply air volume of a given system
+def get_total_air_supply_volume_system(system: str, building: str) -> float:
+    with get_cursor() as cursor:
+        if building is None:
+            cursor.execute("SELECT air_supply FROM rooms WHERE system = ?", (system,))
+        else:
+            cursor.execute("SELECT air_supply FROM rooms WHERE system = ? AND bygg = ?", (system, building))
         result = cursor.fetchall()
         volumes = [volume[0] for volume in result]
         volume = 0
@@ -222,9 +235,12 @@ def get_total_air_supply_volume_system(system: str) -> float:
         return volume
 
 # Returns the total extract air volumne of a given system
-def get_total_air_extract_volume_system(system: str) -> float:
+def get_total_air_extract_volume_system(system: str, building: str) -> float:
     with get_cursor() as cursor:
-        cursor.execute("SELECT air_extract FROM rooms WHERE system = ?", (system,))
+        if building is None:
+            cursor.execute("SELECT air_extract FROM rooms WHERE system = ?", (system,))
+        else:
+            cursor.execute("SELECT air_extract FROM rooms WHERE system = ? AND bygg = ?", (system, building))
         result = cursor.fetchall()
         volumes = [volume[0] for volume in result]
         volume = 0

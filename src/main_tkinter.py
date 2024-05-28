@@ -146,7 +146,7 @@ class MainWindow:
     
     # SUMMARY OF SYSTEMS DATA. UPDATES ON ADDING AND REMOVING ROOMS
     def update_top_frame_summary(self):
-        systems = db.get_ventilation_systems()
+        systems = db.get_all_ventilation_systems()
         systems.sort()
         # clear all widgest
         for widget in self.top_frame.winfo_children():

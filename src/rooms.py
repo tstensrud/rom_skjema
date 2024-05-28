@@ -30,11 +30,9 @@ def get_room_sql_data_to_json(room_id):
     except Exception as e:
         QMessageBox.critical(None, "Feil", f"Kunne ikke laste inn rom-data: {e}")
 
-
-
 # set all data for a new room and call the database-method for generating new room
 def create_new_room(specification, building: str, room_type: str, floor: str, room_number: str, room_name: str,
-                population: int, area: float, system: str):
+                population: int, area: float, system: str) -> int:
     
     specification = specification
     
@@ -102,10 +100,12 @@ def create_new_room(specification, building: str, room_type: str, floor: str, ro
         ventilation_principle = "Omrøring"
     system: str = system
     
-    add_new_room_to_db(building, room_type, floor, room_number, room_name, area, room_population, air_per_person, sum_air_people, air_emission, sum_emissions,
+    new_room_id = add_new_room_to_db(building, room_type, floor, room_number, room_name, area, room_population, air_per_person, sum_air_people, air_emission, sum_emissions,
                 air_process, minimum_air, total_required_air_volume, chosen_air_supply, chosen_air_exhaust, sum_air_per_area, ventilation_principle,
                 heat_exchange, room_controls, notes, sound['db_teknisk'], sound['db_rw_naborom'], sound['db_rw_korridor'], system, additional)
     
+    return new_room_id[0]
+
 # round up to closest dividable by 10
 # returns the first value dividable by 10, which is set as the
 # chosen air volumne for the room.

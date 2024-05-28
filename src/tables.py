@@ -5,7 +5,7 @@ from PyQt6.QtGui import QAction
 
 from rooms import get_room_sql_data_to_json
 from db_operations import *
-from summary import summary_objects
+from summary import BuildingSummary
 
 class RoomTable(QTableWidget):
     def __init__ (self, building):
@@ -47,6 +47,8 @@ class RoomTable(QTableWidget):
         # Keep track of opened windows
         self.windows = []
 
+        self.building_summary = BuildingSummary(self.building)
+
     # Right-click menu bar on table
     def table_right_click_menu(self, position: QPoint):
         table_right_click_menu = QMenu()
@@ -82,7 +84,7 @@ class RoomTable(QTableWidget):
 
     # Insert new row at the end of table or at given index.
     # Can also be used to update existing row.
-    def new_updated_row(self, updated_row, row_insertion: int, end: bool) -> None:
+    def update_table_row(self, updated_row, row_insertion: int, end: bool) -> None:
         row_index = row_insertion
         if end == True:
             row_index = self.rowCount()
@@ -93,6 +95,22 @@ class RoomTable(QTableWidget):
         # update summary at top of mainwindow
         #summary_objects[0].intiate_labels()
     
+    def add_new_room_to_table(self, room_id):
+        if self.cell_updating == True:
+            return
+        self.cell_updating = True
+        try:
+            self.itemChanged.disconnect(self.changed_cell) 
+            new_room_data = get_room_table_data(room_id)
+            last_row = self.rowCount()
+            self.insertRow(last_row)
+            for column, data in enumerate(new_room_data):
+                self.setItem(last_row, column, QTableWidgetItem(str(data)))
+            self.sort_rows(2)
+        finally:
+            self.itemChanged.connect(self.changed_cell)
+            self.cell_updating = False
+
     # Handle the change of value in a cell
     def changed_cell(self, item) -> str:
         if self.cell_updating == True:
@@ -117,7 +135,7 @@ class RoomTable(QTableWidget):
                 self.removeRow(row)
                 
                 # Insert update row into table and sort table
-                self.new_updated_row(updated_row, row, False)
+                self.update_table_row(updated_row, row, False)
                 #self.sortItems(2) # sort by floor first
                 
             else:
@@ -159,7 +177,12 @@ class RoomTable(QTableWidget):
         # Add window to tracked windows and remove it when window is destroyed
         self.windows.append(summary_window)
         summary_window.destroyed.connect(lambda: self.windows.remove(summary_window))
-        
-    # Return the table object
+    
+    def get_summary_object(self):
+        return self.building_summary
+    
+    def get_building(self) -> str:
+        return self.building
+    
     def get_table(self):
         return self
