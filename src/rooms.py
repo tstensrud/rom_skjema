@@ -30,25 +30,16 @@ def get_room_sql_data_to_json(room_id):
     except Exception as e:
         QMessageBox.critical(None, "Feil", f"Kunne ikke laste inn rom-data: {e}")
 
-# set all data for a new room and call the database-method for generating new room
+# Set all data for a new room and call the database-method for generating new room
+# Returns ID of newly created room
 def create_new_room(specification, building: str, room_type: str, floor: str, room_number: str, room_name: str,
                 population: int, area: float, system: str) -> int:
-    
-    specification = specification
-    
-    # LOAD JSON DATA
+        
+    # Load Json-data
     json_file_path = os.path.join(os.path.dirname(__file__), "json", f"{specification}.json")
     with open(json_file_path) as jfile:
         data = json.load(jfile)
     
-    # SET VARIABLES FROM JSON FILE ACCORDING TO CURRENT SPECIFICATION
-    building: str = building
-    room_type: str = room_type
-    floor: str = floor
-    room_number: str = room_number
-    room_name: str = room_name
-    area: float = area
-    room_population: int = population
     air_per_person: float = data[f'{room_type}']['luftmengder']['m3_per_person']
     air_emission: float = data[f'{room_type}']['luftmengder']['m3_emisjon']
     air_process: float = data[f'{room_type}']['luftmengder']['m3_prossess']
@@ -86,7 +77,7 @@ def create_new_room(specification, building: str, room_type: str, floor: str, ro
 
     # INITIAL CALCULATIONS FOR VENTILATION VALUES
     sum_emissions = int(area * air_emission)
-    sum_air_people = int(room_population * air_per_person)
+    sum_air_people = int(population * air_per_person)
     total_required_air_volume = int(sum_emissions + sum_air_people + air_process)
     minimum_air = int(air_minimum * area)
     chosen_air_supply: float = calculate_chosen_supply_volume(total_required_air_volume)
@@ -100,7 +91,7 @@ def create_new_room(specification, building: str, room_type: str, floor: str, ro
         ventilation_principle = "Omrøring"
     system: str = system
     
-    new_room_id = add_new_room_to_db(building, room_type, floor, room_number, room_name, area, room_population, air_per_person, sum_air_people, air_emission, sum_emissions,
+    new_room_id = add_new_room_to_db(building, room_type, floor, room_number, room_name, area, population, air_per_person, sum_air_people, air_emission, sum_emissions,
                 air_process, minimum_air, total_required_air_volume, chosen_air_supply, chosen_air_exhaust, sum_air_per_area, ventilation_principle,
                 heat_exchange, room_controls, notes, sound['db_teknisk'], sound['db_rw_naborom'], sound['db_rw_korridor'], system, additional)
     
