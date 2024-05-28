@@ -45,7 +45,7 @@ class RoomTable(QTableWidget):
         self.customContextMenuRequested.connect(self.table_right_click_menu)    
         
         # Keep track of opened windows
-        self.windows = []
+        self.opened_windows = []
 
         self.building_summary = BuildingSummary(self.building)
 
@@ -175,8 +175,8 @@ class RoomTable(QTableWidget):
         summary_window.show()
 
         # Add window to tracked windows and remove it when window is destroyed
-        self.windows.append(summary_window)
-        summary_window.destroyed.connect(lambda: self.windows.remove(summary_window))
+        self.opened_windows.append(summary_window)
+        summary_window.destroyed.connect(lambda: self.opened_windows.remove(summary_window))
     
     def get_summary_object(self):
         return self.building_summary

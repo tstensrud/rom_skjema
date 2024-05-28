@@ -196,16 +196,40 @@ def add_units_to_room_data(rows, single_room: bool) -> tuple:
             row_list_with_units.append(tuple(row_list))
         return row_list_with_units
 
-# Return the sum of a column
-def get_sum_of_column(columns) -> float:
+# Return the database column bame based on givne column index
+def get_column_name(column_id) -> str:
+    column_map = {
+        "0": "id",
+        "1": "bygg",
+        "2": "floor",
+        "3": "roomnr",
+        "4": "roomname",
+        "5": "area",
+        "6": "room_population",
+        "7": "air_per_person",
+        "8": "air_person_sum",
+        "9": "air_emission",
+        "10": "air_emission_sum",
+        "11": "air_process",
+        "12": "air_demand",
+        "13": "air_supply",
+        "14": "air_extract",
+        "19": "system"
+    }
+    print(f"Retrieved column {column_map.get(column_id)}")
+    return column_map.get(column_id)
+
+# Return the sum air volume for given building and floor
+def get_sum_of_air_building_floor(building: str, floor: str, column) -> float:
     with get_cursor() as cursor:
-        column_sums = []
-        for column in columns:
-            query = f"""SELECT SUM({column}) FROM rooms"""
-            cursor.execute(query)
-            result = cursor.fetchone()
-            column_sums.append(result[0])
-        return column_sums
+
+        column_name: str = get_column_name(column)
+
+        query = f"""SELECT SUM({column_name}) FROM rooms WHERE bygg = ? AND floor = ?"""
+        cursor.execute(query, (building, floor,))
+        result = cursor.fetchone()
+
+        return result[0]
 
 # Get all current ventilationsystems
 def get_all_ventilation_systems():
@@ -317,24 +341,6 @@ def recalculate_based_on_supply(room_id):
         new_air_chosen = float(air_supply / area)
         update = "UPDATE rooms SET air_chosen = ? WHERE id = ?"
         cursor.execute(update, (new_air_chosen, room_id))
-
-# Return the database column bame based on givne column index
-def get_column_name(column_id) -> str:
-    column_map = {
-        "1": "bygg",
-        "2": "floor",
-        "3": "roomnr",
-        "4": "roomname",
-        "5": "area",
-        "6": "room_population",
-        "7": "air_per_person",
-        "8": "air_emission",
-        "11": "air_process",
-        "13": "air_supply",
-        "14": "air_extract",
-        "19": "system"
-    }
-    return column_map.get(column_id)
 
 # Returns list of buildings
 def get_buildings():
