@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QWidget, QTableWidget, QTableWidgetItem, QHeaderView, QMenu, 
                              QMessageBox, QGridLayout, QLabel)
 from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QColor
 
 from rooms import get_room_sql_data_to_json
 from db_operations import *
@@ -17,13 +17,13 @@ class RoomTable(QTableWidget):
         # Define column headers
         self.columns=["rom-id", "Bygg", "Etasje", "Romnr", "Romnavn", "Areal", "Antall_pers", "Luft per pers", 
                     "Sum personer", "Emisjon", "Sum emisjon", "Prosess", "Dimensjonert", 
-                    "Tilluft", "Avtrekk", "Valgt", "Gjenvinner", "Prinsipp", "Styring", "System"]
+                    "Tilluft", "Avtrekk", "Valgt", "Gjenvinner", "Prinsipp", "Styring", "System", "Kommentar"]
         
         # Query databse for all rooms for this building
         self.rooms = get_all_rooms(building)
         
         # Set # of columns and rows upon initiating the table
-        super().__init__(len(self.rooms), len(self.columns))
+        super().__init__(len(self.rooms) + 1, len(self.columns))
         
         # Insert data from database
         self.insert_data_from_db()
@@ -34,6 +34,7 @@ class RoomTable(QTableWidget):
         self.setColumnWidth(4, 250)
         self.setHorizontalHeaderLabels(self.columns)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.horizontalHeader().setSectionResizeMode(self.columnCount() - 1, QHeaderView.ResizeMode.Stretch)
 
         # Listeners for interaction with table
         self.itemChanged.connect(self.changed_cell) # for changed cell value
@@ -47,6 +48,7 @@ class RoomTable(QTableWidget):
         # Keep track of opened windows
         self.opened_windows = []
 
+        # Create a building summary object to place on main window
         self.building_summary = BuildingSummary(self.building)
 
     # Right-click menu bar on table
@@ -59,12 +61,15 @@ class RoomTable(QTableWidget):
         
         # Detect clicked row and get it's row and room-index
         row = self.verticalHeader().logicalIndexAt(position)
-        room_id = self.item(row,0).text()
+        try:
+            room_id = self.item(row,0).text()
+        except AttributeError:
+            return
         action = table_right_click_menu.exec(self.mapToGlobal(position))
         
         # Action if delete room is clicked
         if action == table_right_click_menu_delete_room_action:
-            delete_room(room_id)
+            delete_room(self.building, room_id)
             self.removeRow(row)
         if action == table_right_click_menu_summary_room_action:
             self.get_room_summary(room_id)
@@ -79,8 +84,24 @@ class RoomTable(QTableWidget):
     # Insert data from database when program loads
     def insert_data_from_db(self) -> None:
         for row, row_data in enumerate(self.rooms):
-            for col, value in enumerate(row_data):               
+            for col, value in enumerate(row_data):           
                 self.setItem(row, col, QTableWidgetItem(str(value)))
+        self.column_summaries()
+    
+    # Insert column summaries for all floors
+    def column_summaries(self) -> None:
+        columns_for_summary = [5, 8, 10, 11, 12, 13, 14]
+        for column in columns_for_summary:
+            column_sum = get_sum_of_column_building_floor(self.building, None, column)
+            column_input = ""
+            
+            if column == 5:
+                column_input = f"{column_sum} m2"
+            else:
+                column_input = f"{column_sum} m3/h"
+            table_item = QTableWidgetItem(str(column_input))
+            table_item.setBackground(QColor(100,100,100))
+            self.setItem(self.rowCount() - 1, column, table_item)
 
     # Insert new row at the end of table or at given index.
     # Can also be used to update existing row.
@@ -90,7 +111,8 @@ class RoomTable(QTableWidget):
             row_index = self.rowCount()
         self.insertRow(row_index)
         for column, data in enumerate(updated_row):
-            self.setItem(row_index, column, QTableWidgetItem(str(data)))
+            table_item = QTableWidgetItem(str(data))
+            self.setItem(row_index, column, table_item)
         
         # update summary at top of mainwindow
         #summary_objects[0].intiate_labels()
@@ -117,7 +139,7 @@ class RoomTable(QTableWidget):
             return
         
         row = item.row() # get current row
-        column = str(item.column()) # get text of column header
+        column = item.column() # get text of column header
         room_id = self.item(row,0).text() # get row index 0 which is room id
         new_value = item.text()
         
@@ -126,9 +148,10 @@ class RoomTable(QTableWidget):
             # disconnect to ensure cell does not try to update twice
             self.itemChanged.disconnect(self.changed_cell) 
             # send new value to update database
-            if update_db_table_value(room_id, column, new_value):
+            if update_db_table_value(self.building, room_id, column, new_value):
+
                 # get updated room data from database after update
-                updated_row = get_room_table_data(room_id)
+                updated_row = get_room_table_data(self.building, room_id)
 
                 # close cell-editor and remove the old row
                 self.closePersistentEditor(self.currentItem())
@@ -136,7 +159,6 @@ class RoomTable(QTableWidget):
                 
                 # Insert update row into table and sort table
                 self.update_table_row(updated_row, row, False)
-                #self.sortItems(2) # sort by floor first
                 
             else:
                 QMessageBox.critical(self, "Feil", f"Kunne ikke oppdatere data")

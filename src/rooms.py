@@ -141,4 +141,4 @@ def generate_room():
         room_type_list.append(room)
     room_type = room_type_list[random.randint(0, len(room_type_list)-1)]
     create_new_room("skok", building, room_type, floor, room_number, room_type, random.randint(2,20), random.randint(5, 100),
-         system) 
+         system)

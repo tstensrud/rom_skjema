@@ -63,16 +63,12 @@ class MainWindow(QMainWindow):
         new_room.triggered.connect(self.new_room_popup)
         new_room.setShortcut("Ctrl+N")
         new_room.setStatusTip("Legg til nytt rom")
-        delete_room = QAction("Fjern rom", self)
-        delete_room.setShortcut("Ctrl+D")
-        delete_room.setStatusTip("Slet rom")
-        delete_room.triggered.connect(self.delete_room)
         room_menu.addAction(new_room)
-        room_menu.addAction(delete_room)
+
     
-    # Generate one tab for each unique building found in database
+    # Generate one tab for each table found in database
     def generate_tabs(self) -> None:
-        buildings = db.get_buildings()
+        buildings = db.get_all_tables()
         for i in range(len(buildings)):
             tab = QWidget()
             layout = QVBoxLayout(tab)
@@ -103,17 +99,25 @@ class MainWindow(QMainWindow):
         self.new_room_window.setGeometry(150,150,300,200)
         self.new_room_layout = QGridLayout()
 
+        
+
         # Load room types for given specification
         self.rooms: str = []
         for room in db.load_room_types("skok"):
             self.rooms.append(room)
         
         # Button, checkbox and room type menu
+        buildings = db.get_all_tables()
+        self.building_list_cbox = QComboBox()
+        self.building_list_cbox.addItems(buildings)
+
+        self.room_list_qbox = QComboBox()
+        self.room_list_qbox.addItems(self.rooms)
+
         self.add_button = QPushButton("Legg til")
         self.add_button.clicked.connect(self.add_new_room)
-        self.room_list = QComboBox()
-        self.room_list.addItems(self.rooms)
         self.several_new_rooms_check = QCheckBox("Flere rom")
+
 
         # Labels
         self.label_room_Type = QLabel("Romtype")
@@ -128,8 +132,6 @@ class MainWindow(QMainWindow):
                        self.label_room_name, self.label_area, self.label_people, self.label_system]
         
         # Entry fields
-        self.entry_building = QLineEdit()
-        self.entry_building.setPlaceholderText("Bygg")
         self.entry_floor = QLineEdit()
         self.entry_floor.setPlaceholderText("Etasje")
         self.entry_room_number = QLineEdit()
@@ -142,12 +144,12 @@ class MainWindow(QMainWindow):
         self.entry_people.setPlaceholderText("Antall personer")
         self.entry_system = QLineEdit()
         self.entry_system.setPlaceholderText("System")
-        entries = [self.entry_building, self.entry_floor, self.entry_room_number, self.entry_room_name,
+        entries = [self.building_list_cbox, self.entry_floor, self.entry_room_number, self.entry_room_name,
                    self.entry_area, self.entry_people, self.entry_system]
 
         # Add widgets to window
         self.new_room_layout.addWidget(self.label_room_Type, 0, 0)
-        self.new_room_layout.addWidget(self.room_list, 0, 1)
+        self.new_room_layout.addWidget(self.room_list_qbox, 0, 1)
         
         for i in range(len(self.labels)):
             self.new_room_layout.addWidget(self.labels[i], i+1, 0)
@@ -165,9 +167,9 @@ class MainWindow(QMainWindow):
     
     # Add new room to database
     def add_new_room(self) -> None:
-        room_type: str = self.room_list.currentText().strip()     
+        room_type: str = self.room_list_qbox.currentText().strip()     
         
-        building: str = self.check_entry_field_for_empty_string(self.entry_building, "Bygg").strip()
+        building: str = self.check_entry_field_for_empty_string(self.building_list_cbox, "Bygg")
         floor: str = self.check_entry_field_for_empty_string(self.entry_floor, "Etasje").strip()
         
         room_number: str = self.check_entry_field_for_empty_string(self.entry_room_number, "Romnr").strip()
@@ -202,10 +204,6 @@ class MainWindow(QMainWindow):
         # Update table for building of new room
         table = self.tables[building]
         table.add_new_room(new_room_id)
-
-    # Delete room
-    def delete_room(self):
-        pass
 
     # Check if entry fields are empty when creating new room
     # Return content of entry field if not empty

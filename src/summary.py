@@ -26,7 +26,7 @@ class BuildingSummary(QWidget):
             self.layout.addWidget(system_airflow_extract_label, 2, i)
     
     def update_labels(self):
-        ...
+        pass
 
     def get_object(self):
         return self
