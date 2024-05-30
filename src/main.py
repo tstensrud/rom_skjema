@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QSplitter, QGridLayout,
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
+from gui_windows import building_settings, system_settings
 from rooms import create_new_room
 from tables import RoomTable
 
@@ -65,6 +66,16 @@ class MainWindow(QMainWindow):
         new_room.setStatusTip("Legg til nytt rom")
         room_menu.addAction(new_room)
 
+        project_menu = menu.addMenu("Prosjektinnstillinger")
+        bygg = QAction("Bygg", self)
+        bygg.triggered.connect(self.building_settings)
+        bygg.setStatusTip("Innstillinger for prosjektets bygg")
+        systems = QAction("Systemer", self)
+        systems.triggered.connect(self.system_settings)
+        systems.setStatusTip("Innstillinger for systemer")
+        project_menu.addAction(bygg)
+        project_menu.addAction(systems)
+
     
     # Generate one tab for each table found in database
     def generate_tabs(self) -> None:
@@ -85,6 +96,7 @@ class MainWindow(QMainWindow):
             layout.setStretch(0,1)
             self.bottom_widget.addTab(tab, f"Bygg {buildings[i]}")
 
+    # Update summary depending on what tab is clicked
     def tab_change(self, index):
         table = self.bottom_widget.widget(index).findChild(QTableWidget)
         if self.current_summary is not None:
@@ -92,14 +104,30 @@ class MainWindow(QMainWindow):
         self.current_summary = table.get_summary_object()
         self.current_summary.show()
 
+    # Window for managing and summarizing buildings in project
+    def building_settings(self):
+        window = building_settings.BuildingSettings()
+        window.show()
+
+        # Add window to tracked windows and remove it when window is destroyed
+        self.windows.append(window)
+        window.destroyed.connect(lambda: self.windows.remove(window))
+
+    # Window for managing and summarizing systems in project
+    def system_settings(self):
+        window = system_settings.SystemSettings()
+        window.show()
+
+        # Add window to tracked windows and remove it when window is destroyed
+        self.windows.append(window)
+        window.destroyed.connect(lambda: self.windows.remove(window))
+    
     # Open window for adding new room
     def new_room_popup(self):
         self.new_room_window = QWidget()
         self.new_room_window.setWindowTitle(f"Legg til nye rom")
         self.new_room_window.setGeometry(150,150,300,200)
         self.new_room_layout = QGridLayout()
-
-        
 
         # Load room types for given specification
         self.rooms: str = []
@@ -163,11 +191,11 @@ class MainWindow(QMainWindow):
 
         # Add window to tracked windows and remove it when window is destroyed
         self.windows.append(self.new_room_window)
-        self.new_room_window.destroyed.connect(lambda: self.windows.clear())
+        self.new_room_window.destroyed.connect(lambda: self.windows.remove(self.new_room_window))
     
     # Add new room to database
     def add_new_room(self) -> None:
-        room_type: str = self.room_list_qbox.currentText().strip()     
+        room_type: str = self.room_list_qbox.currentText()
         
         building: str = self.check_entry_field_for_empty_string(self.building_list_cbox, "Bygg")
         floor: str = self.check_entry_field_for_empty_string(self.entry_floor, "Etasje").strip()

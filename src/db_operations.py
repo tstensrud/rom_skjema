@@ -260,7 +260,8 @@ def get_ventilation_system_per_building(building: str):
 
 # Returns the total supply air volume of a given system
 # Either for entire project or specific building
-def get_total_air_supply_volume_system(system: str, building: str) -> float:
+def get_total_air_supply_volume_system(building: str, system: str) -> float:
+    volume = 0
     with get_cursor() as cursor:
         if building is None:
             pass
@@ -269,13 +270,12 @@ def get_total_air_supply_volume_system(system: str, building: str) -> float:
             cursor.execute(f"SELECT air_supply FROM {building} WHERE system = ?", (system,))
         result = cursor.fetchall()
         volumes = [volume[0] for volume in result]
-        volume = 0
         for val in volumes:
             volume += val
         return volume
 
 # Returns the total extract air volumne of a given system
-def get_total_air_extract_volume_system(system: str, building: str) -> float:
+def get_total_air_extract_volume_system(building: str, system: str) -> float:
     with get_cursor() as cursor:
         if building is None:
             pass
@@ -303,8 +303,7 @@ def load_room_types(specification: str):
 # Called when a user changes the value of a cell manually
 def update_db_table_value(building: str, room_id: str, column_id: int, new_value) -> bool:
     with get_cursor() as cursor:
-        column_name = get_column_name(column_id)
-        
+        column_name = get_column_name(column_id)       
         query = f"""UPDATE {building} 
                     SET {column_name} = ?
                     WHERE id = ? """
@@ -318,6 +317,15 @@ def update_db_table_value(building: str, room_id: str, column_id: int, new_value
         recalculate_all_values(building, room_id)
     
     return True
+
+def get_single_cell_value(building: str, room_id: str, column: int):
+    with get_cursor() as cursor:
+        column_name: str = get_column_name(column)
+        query = f"SELECT {column_name} FROM {building} WHERE id = ?"
+        cursor.execute(query,(room_id,))
+        result = cursor.fetchone()
+        return result[0]
+
 
 # Recalculate values when a table-value is updated
 def recalculate_all_values(building: str, room_id: int) -> None:

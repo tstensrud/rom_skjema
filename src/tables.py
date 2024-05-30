@@ -5,6 +5,7 @@ from PyQt6.QtGui import QAction, QColor
 
 from rooms import get_room_sql_data_to_json
 from db_operations import *
+from gui_windows import messageboxes
 from summary import BuildingSummary
 
 class RoomTable(QTableWidget):
@@ -12,7 +13,7 @@ class RoomTable(QTableWidget):
         self.building = building
 
         # These columns should not be editable
-        self.locked_columns =  [0,7,8,9,10,12,15,16,17,18]
+        self.locked_columns =  [0,1,7,8,9,10,12,15,16,17,18]
 
         # Define column headers
         self.columns=["rom-id", "Bygg", "Etasje", "Romnr", "Romnavn", "Areal", "Antall_pers", "Luft per pers", 
@@ -114,8 +115,8 @@ class RoomTable(QTableWidget):
             table_item = QTableWidgetItem(str(data))
             self.setItem(row_index, column, table_item)
         
-        # update summary at top of mainwindow
-        #summary_objects[0].intiate_labels()
+        self.update_buildnig_summary()
+        
     
     def add_new_room_to_table(self, room_id):
         if self.cell_updating == True:
@@ -139,15 +140,23 @@ class RoomTable(QTableWidget):
             return
         
         row = item.row() # get current row
-        column = item.column() # get text of column header
+        column = item.column() # get column index
         room_id = self.item(row,0).text() # get row index 0 which is room id
         new_value = item.text()
-        
         self.cell_updating = True
+        
         try:
-            # disconnect to ensure cell does not try to update twice
-            self.itemChanged.disconnect(self.changed_cell) 
-            # send new value to update database
+            # Disconnect to ensure cell does not try to update twice
+            self.itemChanged.disconnect(self.changed_cell)
+            
+            # Check if new room number already exists. If it does, insert old value back into cell
+            old_value = get_single_cell_value(self.building, room_id, column)
+            if check_if_room_number_exists(new_value, self.building) == True:
+                messageboxes.information_box("Feil romnr", f"Romnummer {new_value} finnes allerede i bygg {self.building}")
+                self.item(row,column).setText(old_value)
+                return
+            
+            # Send new value to update database
             if update_db_table_value(self.building, room_id, column, new_value):
 
                 # get updated room data from database after update
@@ -161,7 +170,7 @@ class RoomTable(QTableWidget):
                 self.update_table_row(updated_row, row, False)
                 
             else:
-                QMessageBox.critical(self, "Feil", f"Kunne ikke oppdatere data")
+                QMessageBox.critical(self, "Feil", f"Kunne ikke oppdatere data. Finnes romnr allerede?")
         finally:
             # Rreconnect and reopen cell for option to change
             self.itemChanged.connect(self.changed_cell)
@@ -200,6 +209,9 @@ class RoomTable(QTableWidget):
         self.opened_windows.append(summary_window)
         summary_window.destroyed.connect(lambda: self.opened_windows.remove(summary_window))
     
+    def update_buildnig_summary(self):
+        self.building_summary.update_labels()
+
     def get_summary_object(self):
         return self.building_summary
     
