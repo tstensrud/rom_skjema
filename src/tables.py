@@ -52,7 +52,6 @@ class RoomTable(QTableWidget):
         # Create a building summary object to place on main window
         self.building_summary = BuildingSummary(self.building)
 
-    # Right-click menu bar on table
     def table_right_click_menu(self, position: QPoint):
         table_right_click_menu = QMenu()
         table_right_click_menu_summary_room_action = QAction("All rom-data", self)
@@ -68,7 +67,7 @@ class RoomTable(QTableWidget):
             return
         action = table_right_click_menu.exec(self.mapToGlobal(position))
         
-        # Action if delete room is clicked
+        # Actions for right-click menu
         if action == table_right_click_menu_delete_room_action:
             delete_room(self.building, room_id)
             self.removeRow(row)
@@ -116,7 +115,6 @@ class RoomTable(QTableWidget):
             self.setItem(row_index, column, table_item)
         
         self.update_buildnig_summary()
-        
     
     def add_new_room_to_table(self, room_id):
         if self.cell_updating == True:
@@ -176,7 +174,6 @@ class RoomTable(QTableWidget):
             self.itemChanged.connect(self.changed_cell)
             self.cell_updating = False
     
-    # Sort rows when one of the headers are clicked
     def sort_rows(self, section):
         sortable_columns = [2,3,4,19]
         if section in sortable_columns:
@@ -184,7 +181,7 @@ class RoomTable(QTableWidget):
 
     # Get complete room summary
     def get_room_summary(self, room_id):
-        # Get room data and deserialize
+        
         room_data = get_room_sql_data_to_json(room_id)
         room_data_deserialized = json.loads(room_data)
         items = room_data_deserialized[0]
@@ -194,18 +191,15 @@ class RoomTable(QTableWidget):
         summary_window.setGeometry(150,150,300,200)
         layout = QGridLayout()
 
-        # Place key and value in a grid layout
         for i, (key, value) in enumerate(items.items(), start=1):
             label_key = QLabel(f"{key}")
             label_value = QLabel(f"{value}")    
             layout.addWidget(label_key, i, 0)
             layout.addWidget(label_value, i, 1)
 
-        # Set layout and show window
         summary_window.setLayout(layout)
         summary_window.show()
 
-        # Add window to tracked windows and remove it when window is destroyed
         self.opened_windows.append(summary_window)
         summary_window.destroyed.connect(lambda: self.opened_windows.remove(summary_window))
     

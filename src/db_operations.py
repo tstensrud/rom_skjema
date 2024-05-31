@@ -5,7 +5,10 @@ from PyQt6.QtWidgets import QMessageBox
 from prettytable import PrettyTable # for testing purposes
 from contextlib import contextmanager
 
-DB_PATH = "./db/rooms.db"
+# To create single executable file
+# change DB_PATH to "rooms.db"
+# pyinstaller --onefile --add-data "db\rooms.db:." main.py
+DB_PATH = "db/rooms.db"
 
 # Error message
 def error_message(error: str) -> None:

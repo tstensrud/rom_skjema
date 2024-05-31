@@ -1,24 +1,25 @@
 from PyQt6.QtWidgets import (QGridLayout, QWidget, QLabel, QLineEdit, QPushButton, 
                              QMessageBox, QComboBox)
 from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtCore import pyqtSignal
 
 from gui_windows.messageboxes import *
 from db_operations import create_room_table, delete_table, get_all_tables
 
 class BuildingSettings(QWidget):
+    window_closed = pyqtSignal(QWidget)
     def __init__ (self):
         super().__init__()
         self.setWindowTitle(f"Instillinger for prosjektets bygg")
         self.setGeometry(200,200,600,600)
         self.layout = QGridLayout()
-        
         self.setLayout(self.layout)
-
         self.add_building_widgets()
         self.remove_building_widgets()
-
-        # Set layout and show window
-        self.setLayout(self.layout)
+        
+        self.button = QPushButton("Lagre", self)
+        self.layout.addWidget(self.button, 2,0)
+        self.button.clicked.connect(self.close)
 
     def add_building_widgets(self):
         self.new_building_label = QLabel("Nytt bygg")
@@ -50,7 +51,7 @@ class BuildingSettings(QWidget):
         self.layout.addWidget(self.remove_building_label, 1, 0)
         self.layout.addWidget(self.remove_building_combo, 1, 1)
         self.layout.addWidget(self.remove_building_button, 1, 2)
-    
+
     def remove_building(self):
         box = QMessageBox()
         box.setIcon(QMessageBox.Icon.Warning)
@@ -70,3 +71,7 @@ class BuildingSettings(QWidget):
                     break
         else:
             print("Ikke slettet")
+    
+    def closeEvent(self, event):
+        self.window_closed.emit(self)
+        event.accept()

@@ -68,10 +68,10 @@ class MainWindow(QMainWindow):
 
         project_menu = menu.addMenu("Prosjektinnstillinger")
         bygg = QAction("Bygg", self)
-        bygg.triggered.connect(self.building_settings)
+        bygg.triggered.connect(self.building_settings_window)
         bygg.setStatusTip("Innstillinger for prosjektets bygg")
         systems = QAction("Systemer", self)
-        systems.triggered.connect(self.system_settings)
+        systems.triggered.connect(self.system_settings_window)
         systems.setStatusTip("Innstillinger for systemer")
         project_menu.addAction(bygg)
         project_menu.addAction(systems)
@@ -105,16 +105,21 @@ class MainWindow(QMainWindow):
         self.current_summary.show()
 
     # Window for managing and summarizing buildings in project
-    def building_settings(self):
+    def building_settings_window(self):
         window = building_settings.BuildingSettings()
         window.show()
-
+        
         # Add window to tracked windows and remove it when window is destroyed
         self.windows.append(window)
-        window.destroyed.connect(lambda: self.windows.remove(window))
+        #window.destroyed.connect(lambda: self.building_settings_window_closed(window))
+        window.window_closed.connect(lambda: self.building_settings_window_closed(window))
+
+    def building_settings_window_closed(self, window):
+        self.windows.remove(window)
+
 
     # Window for managing and summarizing systems in project
-    def system_settings(self):
+    def system_settings_window(self):
         window = system_settings.SystemSettings()
         window.show()
 
