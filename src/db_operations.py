@@ -61,7 +61,7 @@ def create_room_table(building):
                    system TEXT,
                    aditional TEXT
                    )
-    """,)
+    """)
     connect.commit()
     connect.close()
 
